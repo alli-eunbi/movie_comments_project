@@ -15,6 +15,7 @@ function MainPage() {
       const { deltaY } = e;
       const { scrollTop } = outerDivRef.current; 
       const pageHeight = window.innerHeight; 
+      
 
       if (deltaY > 0) {
         if (scrollTop >= 0 && scrollTop < pageHeight) {
