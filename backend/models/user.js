@@ -6,7 +6,8 @@ module.exports = class User extends Model {
       index: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        autoIncrement: true
+        autoIncrement: true,
+        primaryKey: true
       },
       id: {
         type: DataTypes.STRING(12),
@@ -53,6 +54,9 @@ module.exports = class User extends Model {
   }
 
   static associate(db) {
-    
+    db.User.hasMany(db.Want_watch, {foreignKey: 'user_index', sourceKey: 'index'})
+    db.User.hasMany(db.Movie_review, {foreignKey: 'user_index', sourceKey: 'index'})
+    db.User.hasMany(db.User_review, {foreignKey: 'reviewed_index', sourceKey: 'index'})
+    db.User.hasMany(db.User_review, {foreignKey: 'reviewer_index', sourceKey: 'index'})
   }
 }
