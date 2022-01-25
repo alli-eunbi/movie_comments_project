@@ -6,37 +6,38 @@ const swaggerJsdoc = require('swagger-jsdoc')
 const { sequelize } = require('./models/index')
 const loginRouter = require('./routes/login_pages')
 
+
 const options = {
   definition: {
     openapi: "3.0.0",
     info: {
-      title: 'team19_data_project',
-      description: 'api information about team19_data_project'
+      title: "team19_data_project",
+      description: "api information about team19_data_project",
     },
-    servers: [{url: 'http://localhost:5000'}],
-    version: '1.0.0'
+    servers: [{ url: "http://localhost:5000" }],
+    version: "1.0.0",
   },
-  apis: ['./routes/*.js', 'app.js']
-}
-const openapiSpecification = swaggerJsdoc(options)
+  apis: ["./routes/*.js", "app.js"],
+};
+const openapiSpecification = swaggerJsdoc(options);
 
-dotenv.config()
-app = express()
-app.set('port', process.env.PORT || 5000);
-sequelize.sync({force: false})
+dotenv.config();
+app = express();
+app.set("port", process.env.PORT || 5000);
+sequelize
+  .sync({ force: true })
   .then(() => {
-    console.log('데이터베이스 연결 성공')
+    console.log("데이터베이스 연결 성공");
   })
   .catch((err) => {
-    console.error(err)
-  })
-  
+    console.error(err);
+  });
 
 // 필요한 세팅
-app.use(morgan('dev'))
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openapiSpecification))
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }))
+app.use(morgan("dev"));
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openapiSpecification));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // router 연결
 app.use('/user', loginRouter)
@@ -75,7 +76,7 @@ app.use('/user', loginRouter)
  *           description: 비밀번호
  *         success:
  *           type: string
- *           description: 성공여부 
+ *           description: 성공여부
  */
 
 // 스웨거 영역을 tag로 구분
@@ -110,13 +111,13 @@ app.use('/user', loginRouter)
  *               items:
  *                 $ref: '#/components/schemas/GETtest'
  */
-app.get('/main', (req, res, next) => {
+app.get("/main", (req, res, next) => {
   const result = {
-    name: 'jinmook',
-    message: 'fucking swagger'
-  }
-  res.json(result)
-})
+    name: "jinmook",
+    message: "fucking swagger",
+  };
+  res.json(result);
+});
 
 // get api에서 파라미터가 있는 경우 처리
 /**
@@ -143,14 +144,14 @@ app.get('/main', (req, res, next) => {
  *      404:
  *        description: no number id
  */
-app.get('/main/:id', (req, res, next) => {
+app.get("/main/:id", (req, res, next) => {
   const result = {
-    name: 'elice',
-    message: 'elice data_project',
-    id: Number(req.params.id)
-  }
-  res.json(result)
-})
+    name: "elice",
+    message: "elice data_project",
+    id: Number(req.params.id),
+  };
+  res.json(result);
+});
 
 // post api 처리
 /**
@@ -182,32 +183,31 @@ app.get('/main/:id', (req, res, next) => {
  *      500:
  *        description: login fail
  */
-app.post('/input', (req, res, next) => {
-  const {email, password} = req.body
+app.post("/input", (req, res, next) => {
+  const { email, password } = req.body;
   const result = {
     email,
     password,
-    success: 'ok'
-  }
-  if (result.password === 'error') return res.status(500).json(result)
-  res.json(result)
-})
-
+    success: "ok",
+  };
+  if (result.password === "error") return res.status(500).json(result);
+  res.json(result);
+});
 
 // 404에러처리 미들웨어
 app.use((req, res, next) => {
-  const error = new Error(`${req.method} ${req.url} 라우터가 없습니다.`)
-  error.status = 404
-  next(error)
-})
+  const error = new Error(`${req.method} ${req.url} 라우터가 없습니다.`);
+  error.status = 404;
+  next(error);
+});
 
 // 에러처리 미들웨어
 app.use((err, req, res, next) => {
-  res.status(err.status || 500)
-  res.send(err.message)
-})
+  res.status(err.status || 500);
+  res.send(err.message);
+});
 
 // 서버 띄우기
-app.listen(app.get('port'), () => {
-  console.log(app.get('port'), '번 포트에서 대기 중')
-})
+app.listen(app.get("port"), () => {
+  console.log(app.get("port"), "번 포트에서 대기 중");
+});
