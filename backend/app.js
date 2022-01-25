@@ -25,13 +25,14 @@ dotenv.config();
 app = express();
 app.set("port", process.env.PORT || 5000);
 sequelize
-  .sync({ force: true })
+  .sync({ force: false })
   .then(() => {
     console.log("데이터베이스 연결 성공");
   })
   .catch((err) => {
     console.error(err);
   });
+
 
 // 필요한 세팅
 app.use(morgan("dev"));
@@ -42,49 +43,13 @@ app.use(express.urlencoded({ extended: true }));
 // router 연결
 app.use('/user', loginRouter)
 
-// 스웨거 스키마 작성 $ref를 통해 스키마를 가져올 수 있다.
-/**
- * @swagger
- * components:
- *   schemas:
- *     GETtest:
- *       properties:
- *         name:
- *           type: string
- *           description: 이름
- *         message:
- *           type: string
- *           description: 테스트 성공 메세지
- *     GETtest2:
- *       properties:
- *         name:
- *           type: string
- *           description: 이름
- *         message:
- *           type: string
- *           description: 테스트 성공 메세지
- *         id:
- *           type: integer
- *           description: 아이디 번호
- *     POSTtest3:
- *       properties:
- *         email:
- *           type: string
- *           description: 이메일 주소
- *         password:
- *           type: string
- *           description: 비밀번호
- *         success:
- *           type: string
- *           description: 성공여부
- */
 
 // 스웨거 영역을 tag로 구분
 /**
  * @swagger
  * tags:
  *  - name: USER
- *    description: 유저의 로그인과 관련된 api
+ *    description: 유저의 로그인, 회원가입, 로그아웃과 관련된 api
  *  - name: MAIN
  *    description: 메인 페이지, 영화 상세 페이지, 영화 검색 페이지와 관련된 api
  *  - name: Service
@@ -204,7 +169,7 @@ app.use((req, res, next) => {
 // 에러처리 미들웨어
 app.use((err, req, res, next) => {
   res.status(err.status || 500);
-  res.send(err.message);
+  res.json(err.stack);
 });
 
 // 서버 띄우기
