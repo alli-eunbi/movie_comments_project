@@ -3,6 +3,7 @@ const morgan = require("morgan");
 const dotenv = require("dotenv");
 const swaggerUi = require("swagger-ui-express");
 const swaggerJsdoc = require("swagger-jsdoc");
+const { sequelize } = require("./models/index");
 
 const options = {
   definition: {
@@ -21,6 +22,14 @@ const openapiSpecification = swaggerJsdoc(options);
 dotenv.config();
 app = express();
 app.set("port", process.env.PORT || 5000);
+sequelize
+  .sync({ force: false })
+  .then(() => {
+    console.log("데이터베이스 연결 성공");
+  })
+  .catch((err) => {
+    console.error(err);
+  });
 
 // 필요한 세팅
 app.use(morgan("dev"));

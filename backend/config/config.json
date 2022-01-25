@@ -2,7 +2,7 @@
   "development": {
     "username": "root",
     "password": "password",
-    "database": "RemoN",
+    "database": "data_project",
     "host": "mysql",
     "dialect": "mysql"
   },
