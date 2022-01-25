@@ -4,6 +4,7 @@ const dotenv = require('dotenv')
 const swaggerUi = require('swagger-ui-express')
 const swaggerJsdoc = require('swagger-jsdoc')
 const { sequelize } = require('./models/index')
+const loginRouter = require('./routes/login_pages')
 
 const options = {
   definition: {
@@ -36,6 +37,9 @@ app.use(morgan('dev'))
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openapiSpecification))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+
+// router 연결
+app.use('/user', loginRouter)
 
 // 스웨거 스키마 작성 $ref를 통해 스키마를 가져올 수 있다.
 /**
@@ -78,10 +82,14 @@ app.use(express.urlencoded({ extended: true }))
 /**
  * @swagger
  * tags:
- *  - name: Test
- *    description: test swagger
- *  - name: Test2
- *    description: post api test
+ *  - name: USER
+ *    description: 유저의 로그인과 관련된 api
+ *  - name: MAIN
+ *    description: 메인 페이지, 영화 상세 페이지, 영화 검색 페이지와 관련된 api
+ *  - name: Service
+ *    description: 보고싶어요, 영화의 별점 및 코멘트 기능에 관한 api
+ *  - name: USER-INFO
+ *    description: 유저 상세 페이지
  */
 
 // get api 처리
