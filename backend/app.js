@@ -3,8 +3,12 @@ const morgan = require('morgan')
 const dotenv = require('dotenv')
 const swaggerUi = require('swagger-ui-express')
 const swaggerJsdoc = require('swagger-jsdoc')
+const passport = require('passport')
 const { sequelize } = require('./models/index')
 const loginRouter = require('./routes/login_pages')
+
+dotenv.config()
+const passportConfig = require('./passport/strategies')
 
 
 const options = {
@@ -21,7 +25,7 @@ const options = {
 };
 const openapiSpecification = swaggerJsdoc(options);
 
-dotenv.config();
+
 app = express();
 app.set("port", process.env.PORT || 5000);
 sequelize
@@ -39,6 +43,7 @@ app.use(morgan("dev"));
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openapiSpecification));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(passport.initialize())
 
 // router 연결
 app.use('/user', loginRouter)
