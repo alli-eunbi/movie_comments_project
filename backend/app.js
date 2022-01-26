@@ -14,8 +14,8 @@ const options = {
   definition: {
     openapi: "3.0.0",
     info: {
-      title: "team19_data_project",
-      description: "api information about team19_data_project",
+      title: "RemoN 프로젝트 api 명세서",
+      description: "프로젝트 진행에 필요한 api에 대한 명세서",
     },
     servers: [{ url: "http://localhost:5000" }],
     version: "1.0.0",
@@ -63,106 +63,6 @@ app.use('/user', loginRouter)
  *    description: 유저 상세 페이지
  */
 
-// get api 처리
-/**
- * @swagger
- * /main:
- *   get:
- *     summary: returns the result
- *     tags:
- *     - Test
- *     responses:
- *       200:
- *         description: the result
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/GETtest'
- */
-app.get("/main", (req, res, next) => {
-  const result = {
-    name: "jinmook",
-    message: "fucking swagger",
-  };
-  res.json(result);
-});
-
-// get api에서 파라미터가 있는 경우 처리
-/**
- * @swagger
- * /main/{id}:
- *  get:
- *    summary: get the main id
- *    tags:
- *    - Test
- *    parameters:
- *      - in: path
- *        name: id
- *        schemas:
- *          type: string
- *        required: true
- *        description: the main id
- *    responses:
- *      200:
- *        description: result book id
- *        content:
- *          application/json:
- *            schema:
- *              $ref: '#/components/schemas/GETtest2'
- *      404:
- *        description: no number id
- */
-app.get("/main/:id", (req, res, next) => {
-  const result = {
-    name: "elice",
-    message: "elice data_project",
-    id: Number(req.params.id),
-  };
-  res.json(result);
-});
-
-// post api 처리
-/**
- * @swagger
- * /input:
- *  post:
- *    summary: post email, password data
- *    tags:
- *    - Test2
- *    requestBody:
- *      required: true
- *      content:
- *        application/json:
- *          schema:
- *            type: object
- *            properties:
- *              email:
- *                type: string
- *                description: input email
- *              password:
- *                type: string
- *    responses:
- *      200:
- *        description: login ok
- *        content:
- *          application/json:
- *            schema:
- *              $ref: '#components/schemas/POSTtest3'
- *      500:
- *        description: login fail
- */
-app.post("/input", (req, res, next) => {
-  const { email, password } = req.body;
-  const result = {
-    email,
-    password,
-    success: "ok",
-  };
-  if (result.password === "error") return res.status(500).json(result);
-  res.json(result);
-});
 
 // 404에러처리 미들웨어
 app.use((req, res, next) => {

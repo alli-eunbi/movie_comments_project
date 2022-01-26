@@ -326,7 +326,7 @@ router.get('/callback/kakao', (req, res, next) => {
  * @swagger
  * /user/test1:
  *  get:
- *    summary: isLoggedIn 함수 테스트
+ *    summary: isLoggedIn 함수 테스트입니다. 백엔드에서만 사용합니다.
  *    tags:
  *    - USER
  *    ApiKeyAuth:
@@ -382,14 +382,14 @@ router.get('/callback/kakao', (req, res, next) => {
 router.get('/test1', isLoggedIn, (req, res, next) => {
   const index = req.user.user_index
   const id = req.user.user_id
-  res.json({success: true, index, id})
+  res.json({success: true, index, id, message: 'isLoggedIn 함수 정상 작동'})
 })
 
 /**
  * @swagger
  * /user/test2:
  *  get:
- *    summary: isNotLoggedIn 테스트
+ *    summary: isNotLoggedIn 테스트입니다. 백엔드에서만 사용합니다.
  *    tags:
  *    - USER
  *    ApiKeyAuth:
