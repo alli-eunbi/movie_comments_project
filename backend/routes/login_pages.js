@@ -3,7 +3,7 @@ const passport = require('passport')
 const {User} = require('../models/index')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-const { isLoggedIn } = require('./middleware')
+const { isLoggedIn, isNotLoggedIn } = require('./middleware')
 
 
 const router = express.Router()
@@ -97,7 +97,6 @@ router.post('/register', async (req, res, next) => {
     console.error(err)
     next(err)
   }
-  
 })
 
 
@@ -137,9 +136,6 @@ router.post('/register', async (req, res, next) => {
  *                message:
  *                  type: string
  *                  example: 로그인 완료
- *                token:
- *                  type: string
- *                  example: jwt
  *      400:
  *        description: 가입되지 않은 유저의 경우
  *        content:
@@ -185,14 +181,19 @@ router.post('/login/local', (req, res, next) => {
 
     // 로그인이 확인되었다면 생성한 토큰을 전달한다.
     // user.index, user.id 정보를 토큰에 넣어서 전달한다.
-    console.log(user.index, user.id)
     const token = jwt.sign({
       user_index: user.index,
       user_id: user.id
     }, process.env.JWT_SECRET_KEY, {
-      expiresIn: '1m',
+      expiresIn: '1d',
     })
-    return res.json({success: true, message: '로그인 완료', token})
+
+    res.cookie('accessToken', token, {
+      expires: new Date(Date.now() + 24 * 3600000), // 1일 뒤에 사라짐
+      httpOnly: true
+    })
+
+    return res.json({success: true, message: '로그인 완료'})
   })(req, res, next)
 })
 
@@ -206,6 +207,10 @@ router.post('/login/local', (req, res, next) => {
  *    summary: 로그아웃과 관련된 api
  *    tags:
  *    - USER
+ *    ApiKeyAuth:
+ *      type: apiKey
+ *      in: header
+ *      name: accessToken
  *    responses:
  *      200:
  *        description: 로그아웃 성공
@@ -215,30 +220,157 @@ router.post('/login/local', (req, res, next) => {
  *              type: object
  *              properties:
  *                success:
+ *                  type: boolean
+ *                  example: true    
+ *                message:
  *                  type: string
- *                  example: 성공           
+ *                  example: 로그아웃 성공
+ *      401:
+ *        description: 토큰이 잘못된 경우
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                success:
+ *                  type: boolean
+ *                  example: false
+ *                message:
+ *                  type: string
+ *                  example: 유효하지 않은 토큰입니다.
+ *      419:
+ *        description: 토큰이 만료된 경우 기본은 1일이 지나야 만료됨
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                success:
+ *                  type: boolean
+ *                  example: false
+ *                message:
+ *                  type: string
+ *                  example: 만료된 토큰입니다.
+ *      500:
+ *        description: 서버 에러
  */
- router.get('/logout', (req, res, next) => {
-  const result = {
-    success: '성공'
-  }
-  res.json(result)
+router.get('/logout', isLoggedIn, (req, res, next) => {
+  res.clearCookie('accessToken', {httpOnly: true})
+  res.json({success: true, message: '로그아웃 성공'})
 })
 
 
 /**
  * @swagger
- * /user/test:
+ * /user/test1:
  *  get:
- *    summary: jwt테스트
+ *    summary: isLoggedIn 함수 테스트
  *    tags:
  *    - USER
+ *    ApiKeyAuth:
+ *      type: apiKey
+ *      in: header
+ *      name: accessToken
+ *    responses:
+ *      200:
+ *        description: 테스트 성공
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                success:
+ *                  type: boolean
+ *                  example: true    
+ *                index:
+ *                  type: string
+ *                  example: 2
+ *                id:
+ *                  type: string
+ *                  example: 유저 아이디
+ *      401:
+ *        description: 토큰이 잘못된 경우
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                success:
+ *                  type: boolean
+ *                  example: false
+ *                message:
+ *                  type: string
+ *                  example: 유효하지 않은 토큰입니다.
+ *      419:
+ *        description: 토큰이 만료된 경우 기본은 1일이 지나야 만료됨
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                success:
+ *                  type: boolean
+ *                  example: false
+ *                message:
+ *                  type: string
+ *                  example: 만료된 토큰입니다.    
+ *      500:
+ *        description: 서버 에러
  */
-
-router.get('/test', isLoggedIn, (req, res, next) => {
+router.get('/test1', isLoggedIn, (req, res, next) => {
   const index = req.user.user_index
   const id = req.user.user_id
   res.json({success: true, index, id})
 })
+
+/**
+ * @swagger
+ * /user/test2:
+ *  get:
+ *    summary: isNotLoggedIn 테스트
+ *    tags:
+ *    - USER
+ *    ApiKeyAuth:
+ *      type: apiKey
+ *      in: header
+ *      name: accessToken
+ *    responses:
+ *      200:
+ *        description: 로그인 안된 상태 확인 완료
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                success:
+ *                  type: boolean
+ *                  example: true    
+ *                index:
+ *                  type: string
+ *                  example: 2
+ *                id:
+ *                  type: string
+ *                  example: 유저 아이디
+ *      400:
+ *        description: 로그인이 된 상태로 접근하는 경우
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                success:
+ *                  type: boolean
+ *                  example: false
+ *                message:
+ *                  type: string
+ *                  example: 유효하지 않은 접근입니다.
+ *      500:
+ *        description: 서버 에러
+ */
+ router.get('/test2', isNotLoggedIn, (req, res, next) => {
+  
+  res.json({success: true, message: 'isNotLoggedIn 함수 정상 작동'})
+})
+
 
 module.exports = router
