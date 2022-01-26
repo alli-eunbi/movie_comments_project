@@ -4,6 +4,7 @@ const dotenv = require("dotenv");
 const swaggerUi = require("swagger-ui-express");
 const swaggerJsdoc = require("swagger-jsdoc");
 const { sequelize } = require("./models/index");
+import main from "./api/main";
 
 const options = {
   definition: {
@@ -20,10 +21,10 @@ const options = {
 const openapiSpecification = swaggerJsdoc(options);
 
 dotenv.config();
-app = express();
+const app = express();
 app.set("port", process.env.PORT || 5000);
 sequelize
-  .sync({ force: true })
+  .sync({ force: false })
   .then(() => {
     console.log("데이터베이스 연결 성공");
   })
@@ -36,6 +37,7 @@ app.use(morgan("dev"));
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openapiSpecification));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use("/", main);
 
 // 스웨거 스키마 작성 $ref를 통해 스키마를 가져올 수 있다.
 /**
