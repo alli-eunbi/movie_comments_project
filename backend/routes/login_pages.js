@@ -68,7 +68,7 @@ const router = express.Router()
  *      500:
  *        description: 서버 내부 에러
  */
-router.post('/register', async (req, res, next) => {
+router.post('/register', isNotLoggedIn ,async (req, res, next) => {
   try {
     const {img, id, name, password1, password2} = req.body
     // 유저 테이블 내부에 id가 중복인지 확인
@@ -105,7 +105,7 @@ router.post('/register', async (req, res, next) => {
  * @swagger
  * /user/login/local:
  *  post:
- *    summary: 로그인과 관련된 api
+ *    summary: 로컬 로그인과 관련된 api
  *    tags:
  *    - USER
  *    requestBody:
@@ -124,7 +124,7 @@ router.post('/register', async (req, res, next) => {
  *                example: 유저 비밀번호
  *    responses:
  *      200:
- *        description: 로그인 성공 후 로그인 페이지로 이동한다.
+ *        description: 로그인 성공
  *        content:
  *          application/json:
  *            schema:
@@ -166,7 +166,7 @@ router.post('/register', async (req, res, next) => {
  *        description: 서버 에러
  */
 // 우선 처음 로그인 하는 경우 jwt를 발급해주자.
-router.post('/login/local', (req, res, next) => {
+router.post('/login/local', isNotLoggedIn ,(req, res, next) => {
   passport.authenticate('login', {session: false}, (err, user, info) => {
     // 서버에러가 발생하는 경우
     if (err) { return next(err) }
@@ -257,6 +257,68 @@ router.post('/login/local', (req, res, next) => {
 router.get('/logout', isLoggedIn, (req, res, next) => {
   res.clearCookie('accessToken', {httpOnly: true})
   res.json({success: true, message: '로그아웃 성공'})
+})
+
+
+
+/**
+ * @swagger
+ * /user/login/kakao:
+ *  get:
+ *    summary: 카카오 회원가입, 로그인과 관련된 api
+ *    tags:
+ *    - USER
+ *    responses:
+ *      200:
+ *        description: 카카오 로그인 성공
+ *        content:
+ *          application/json:
+ *            schema:
+ *              success:
+ *                type: boolean
+ *                example: true
+ *              message:
+ *                type: string
+ *                example: 로그인 완료
+ *      400:
+ *        description: 로그인이 되어있는 상태에서 시도하는 경우
+ *        content:
+ *          application/json:
+ *            schema:
+ *              success:
+ *                type: boolean
+ *                example: false
+ *              message:
+ *                type: string
+ *                example: 유효하지 않은 접근입니다.
+ *      500:
+ *        description: 서버 에러
+ */
+// 카카오 로그인 및 회원가입 api
+router.get('/login/kakao', isNotLoggedIn ,passport.authenticate('kakao', {session: false}))
+
+// 카카오 리다이랙트 api
+router.get('/callback/kakao', (req, res, next) => {
+  passport.authenticate('kakao', {session: false}, (err, user, info) => {
+    // 서버 에러
+    if (err) return next(err)
+
+    const userObject = user[0].dataValues
+    // 토큰 발급
+    const token = jwt.sign({
+      user_index: userObject.index,
+      user_id: userObject.id
+    }, process.env.JWT_SECRET_KEY, {
+      expiresIn: '1d',
+    })
+    
+    res.cookie('accessToken', token, {
+      expires: new Date(Date.now() + 24 * 3600000), // 1일 뒤에 사라짐
+      httpOnly: true
+    })
+
+    return res.json({success: true, message: '로그인 완료'})
+  })(req, res, next)
 })
 
 

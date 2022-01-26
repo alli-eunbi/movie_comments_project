@@ -1,5 +1,6 @@
 const passport = require('passport')
 const LocalStrategy = require('passport-local')
+const KakaoStrategy = require('passport-kakao').Strategy
 const { User } = require('../models/index')
 const bcrypt = require('bcrypt')
 
@@ -30,5 +31,36 @@ const strategy_login = new LocalStrategy({
 
 passport.use('login', strategy_login)
 
+
+// 카카오 로그인 전략
+const CALLBACK_URL = 'http://localhost:5000/user/callback/kakao'
+
+const strategy_kakao = new KakaoStrategy({
+  clientID: process.env.KAKAO_API_KEY,
+  callbackURL: CALLBACK_URL
+}, async (accessToken, refreshToken, profile, done) => {
+  try {
+    // id가 있는지 확인해보고 있으면 해당 모델을 반환하고 없으면 저장 후 반환한다.
+    // 이때 user의 형태는 배열의 형태이고 0번 인덱스에는 모델의 정보가 있고
+    // 1번 인덱스에는 새로 만들었으면 true, 기존에 있던 유저면 false를 나타낸다.
+    const user = await User.findOrCreate({
+      where: {
+        id: profile.id
+      },
+      defaults: {
+        name: profile.displayName,
+        password: 'kakao-login',
+        social: profile.provider
+      }
+    })
+
+    done(null, user)
+  } catch (err) {
+    console.error(err)
+    done(err)
+  }
+})
+
+passport.use(strategy_kakao)
 
 module.exports = { passport }
