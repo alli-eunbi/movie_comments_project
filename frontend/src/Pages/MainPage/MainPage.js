@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import Grid from "../../Components/Grid/Grid";
 import Fade from 'react-reveal/Fade' // https://www.react-reveal.com/ 
 import Movies from "../../Components/Movie/Movies";
+import NavBar from "../../Components/NavBar/NavBar";
 
 function MainPage() {
   
@@ -92,7 +93,9 @@ function MainPage() {
 
 
   return (
+    
     <Outer ref={outerDivRef}>
+      <NavBar/>
         <Inner>
           <Box>
             <Fade bottom> 
@@ -148,7 +151,7 @@ export default MainPage;
 
 const Outer = styled.div`
     height: 100vh;
-    overflow-y: auto;
+    overflow-y: hidden;
     & ::-webkit-scrollbar {
         display: none;
     }}
@@ -166,7 +169,8 @@ const Inner = styled.div`
 
 const Box = styled.div`
     width: 90%;
-    height: 85%;
+    height: 80%;
+    padding-top: 100px;
     border-radius: 12px;
     background-color: #EEEEEE;
     box-shadow: rgba(0, 0, 0, 0.8) 0px 5px 15px;

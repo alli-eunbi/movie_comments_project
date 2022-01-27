@@ -4,7 +4,7 @@ import styled from 'styled-components';
 function shuffle(array) {
     array.sort(() => Math.random() - 0.2);
 }
-
+ 
 
 export default function Movies (){
     return (
