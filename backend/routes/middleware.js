@@ -33,3 +33,17 @@ exports.isNotLoggedIn = (req, res, next) => {
     return res.status(400).json({success: false, message: '유효하지 않은 접근입니다.'})
   }
 }
+
+// 로그인상태를 체크하는 함수이다. 로그인이 된 상태라면 req.user를 이용할 수 있다.
+exports.logInChecker = (req, res, next) => {
+  try {
+    console.log(req.cookies)
+    const decoded = jwt.verify(req.cookies.accessToken, process.env.JWT_SECRET_KEY)
+    // 로그인이 된 상태면 req.user에 user_index와 user_id가 있다.
+    req.user = decoded
+    next()
+  } catch (err) {
+    // 로그인이 된 상태가 아니라면 req.user에 아무것도 없다.
+    next()
+  }
+}
