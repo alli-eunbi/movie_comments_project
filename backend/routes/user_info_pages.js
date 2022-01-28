@@ -1,5 +1,5 @@
 const express = require('express')
-const {isLoggedIn, isNotLoggedIn} = require('./middleware')
+const {isLoggedIn, isNotLoggedIn, updateTemperature} = require('./middleware')
 const { User, Movie, Movie_review, Want_watch, User_review } = require('../models/index')
 
 const router = express.Router()
@@ -143,7 +143,7 @@ router.get('/:user_id', isLoggedIn, async (req, res, next) => {
  * @swagger
  * /user-info/rating/{reviewed_user_id}:
  *  post:
- *    summary: 유저의 상세정보 페이지 요청
+ *    summary: 유저에 대한 평가를 진행하는 api
  *    tags:
  *      - USER-INFO
  *    parameters:
@@ -169,7 +169,7 @@ router.get('/:user_id', isLoggedIn, async (req, res, next) => {
  *                example: very nice
  *    responses:
  *      200:
- *        description: 성공여부와 메시지 업데이트된 유저의 온도를 전달한다.
+ *        description: 성공여부와 메시지 업데이트된 유저의 온도와 평가 내용을 전달한다.
  *        content:
  *          application/json:
  *            schema:
@@ -184,6 +184,9 @@ router.get('/:user_id', isLoggedIn, async (req, res, next) => {
  *                temperature:
  *                  type: number
  *                  example: 5.6
+ *                new_comment:
+ *                  type: object
+ *                  example: {index: 6, reviewed_index: 4, reviewer_index: 2, score: 4, comment: 평가 내용}
  *      401:
  *        description: 잘못된 토큰을 전달했을때
  *        content:
@@ -208,7 +211,7 @@ router.post('/rating/:reviewed_user_id', isLoggedIn, async (req, res, next) => {
     const { score, comment } = req.body
 
     // User_review테이블에 데이터 추가하고 User 테이블에 평가받은 유저의 temperature 수정하기
-    await User_review.create({
+    const newComment = await User_review.create({
       reviewed_index: reviewedUserIndex,
       reviewer_index: reviewerUserIndex,
       score,
@@ -216,29 +219,10 @@ router.post('/rating/:reviewed_user_id', isLoggedIn, async (req, res, next) => {
     })
   
     // 평가된 유저의 평가 개수와 점수를 이용해 temperature 업데이트
-    const findAndCount = await User_review.findAndCountAll({
-      where: {
-        reviewed_index: reviewedUserIndex
-      },
-      attributes: ['score']
-    })
-
-    // temperature 업데이트 부분
-    let totalScore = 0;
-    findAndCount.rows.forEach(el => {totalScore += el.score})
-    const newTemperature = (totalScore/findAndCount.count).toFixed(1)
-    console.log('temperature: ', newTemperature)
-
-    await User.update({
-      temperature: newTemperature
-    }, {
-      where: {
-        index: reviewedUserIndex
-      }
-    })
+    const newTemperature = updateTemperature(reviewedUserIndex)
 
     // 최종 response로 success: true, message: 성공, temperature: newTemperature 전달
-    const response = { success: true, message: '유저 평가 성공', temperature: newTemperature}
+    const response = { success: true, message: '유저 평가 성공', temperature: newTemperature, new_commnet: newComment}
     res.json(response)
 
   } catch (err) {
@@ -252,14 +236,14 @@ router.post('/rating/:reviewed_user_id', isLoggedIn, async (req, res, next) => {
  * @swagger
  * /user-info/comments/{reviewed_user_id}:
  *  get:
- *    summary: 유저의 상세정보 페이지 요청
+ *    summary: 해당 유저에 달린 평가들 목록을 가져오는 api
  *    tags:
  *      - USER-INFO
  *    parameters:
  *      - name: reviewed_user_id
  *        in: path
  *        required: true
- *        description: 평가받는 유저의 인덱스를 준다.
+ *        description: 평가받은 유저의 인덱스를 준다.
  *        schema:
  *          type: integer
  *    responses:
@@ -338,5 +322,111 @@ router.get('/comments/:reviewed_user_id', isLoggedIn, async (req, res, next) => 
     next(err)
   }
 })
+
+
+/**
+ * @swagger
+ * /user-info/rating/{user_review_index}:
+ *  put:
+ *    summary: 작성된 유저에 대한 평가를 수정하고 수정 내용을 전달해주는 api
+ *    tags:
+ *      - USER-INFO
+ *    parameters:
+ *      - name: user_review_index
+ *        in: path
+ *        required: true
+ *        description: 수정하고자 하는 평가의 테이블 인덱스를 전달한다.
+ *        schema:
+ *          type: integer
+ *    requestBody:
+ *      description: 평가한 점수와 코멘트, 평가된 유저의 인덱스를 전달한다.
+ *      required: true
+ *      content:
+ *        application/json:
+ *          schema:
+ *            type: object
+ *            properties:
+ *              score:
+ *                type: integer
+ *                example: 6
+ *              comment:
+ *                type: string
+ *                example: very nice 
+ *              reviewed_index:
+ *                type: integer
+ *                example: 평가되는 유저의 인덱스 
+ *    responses:
+ *      200:
+ *        description: 해당하는 유저에 대한 평가 목록이 있는 객체들의 배열로 나타난다.
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                success:
+ *                  type: boolean
+ *                  example: true
+ *                message:
+ *                  type: string
+ *                  example: 평가 수정 완료
+ *                new_comment:
+ *                  type: object
+ *                  example: {index: 유저평가 테이블 인덱스, reviewed_index: 평가된 유저의 인덱스, reviewer_index: 평가한 유저의 인덱스, score: 점수, comment: 평가내용}
+ *      401:
+ *        description: 잘못된 토큰을 전달했을때
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/UnvalidToken'
+ *      419:
+ *        description: 토큰이 만료된 경우
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/ExpiredToken'
+ *      500:
+ *        description: 서버 에러   
+ */
+// 유저 평가를 수정하는 api
+// 프론트 서버로부터 score, comment, reviewed_index(상세페이지에 해당하는 유저의 인덱스)를 받는다.
+router.put('/rating/:user_review_index', isLoggedIn, async (req, res, next) => {
+  try {
+    // User_review 테이블의 인덱스 번호를 가져온다.
+    const UserReviewTableIndex = req.params.user_review_index
+    // body에서 수정할 score와 comment, reviewed_index를 받는다.
+    const {score, comment, reviewed_index} = req.body
+
+    // 머저 전달받은 정보로 테이블을 update시켜준다.
+    await User_review.update({
+      score: score,
+      comment: comment
+    }, {
+      where: {
+        index: UserReviewTableIndex,
+        reviewed_index
+      }
+    })
+
+    // update시킨 점수를 바탕으로 User테이블의 temperature를 수정해준다.
+    updateTemperature(reviewed_index)
+
+    // update한 내용을 전달한다.
+    const newComment = await User_review.findOne({
+      where: {
+        index: UserReviewTableIndex
+      }
+    })
+
+    res.json({success: true, message: '평가 수정 완료', new_comment: newComment})
+
+  } catch (err) {
+    console.error(err)
+    next(err)
+  }
+})
+
+
+
+
 
 module.exports = router
