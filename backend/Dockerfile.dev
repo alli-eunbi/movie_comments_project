@@ -8,4 +8,4 @@ RUN npm install
 
 COPY . .
 
-CMD [ "npx", "nodemon", "app" ]
+CMD [ "npx", "nodemon", "app", "--exec", "babel-node" ]
