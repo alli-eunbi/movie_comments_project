@@ -219,7 +219,7 @@ router.post('/rating/:reviewed_user_id', isLoggedIn, async (req, res, next) => {
     })
   
     // 평가된 유저의 평가 개수와 점수를 이용해 temperature 업데이트
-    const newTemperature = updateTemperature(reviewedUserIndex)
+    const newTemperature = await updateTemperature(reviewedUserIndex)
 
     // 최종 response로 success: true, message: 성공, temperature: newTemperature 전달
     const response = { success: true, message: '유저 평가 성공', temperature: newTemperature, new_commnet: newComment}
@@ -408,7 +408,7 @@ router.put('/rating/:user_review_index', isLoggedIn, async (req, res, next) => {
     })
 
     // update시킨 점수를 바탕으로 User테이블의 temperature를 수정해준다.
-    updateTemperature(reviewed_index)
+    const newTemperature = await updateTemperature(reviewed_index)
 
     // update한 내용을 전달한다.
     const newComment = await User_review.findOne({
@@ -417,7 +417,7 @@ router.put('/rating/:user_review_index', isLoggedIn, async (req, res, next) => {
       }
     })
 
-    res.json({success: true, message: '평가 수정 완료', new_comment: newComment})
+    res.json({success: true, message: '평가 수정 완료', temperature: newTemperature, new_comment: newComment})
 
   } catch (err) {
     console.error(err)
