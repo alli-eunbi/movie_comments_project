@@ -1,7 +1,7 @@
 const express = require('express')
 const passport = require('passport')
 const {User} = require('../models/index')
-const bcrypt = require('bcrypt')
+const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const { isLoggedIn, isNotLoggedIn } = require('./middleware')
 

@@ -2,7 +2,7 @@ const passport = require('passport')
 const LocalStrategy = require('passport-local')
 const KakaoStrategy = require('passport-kakao').Strategy
 const { User } = require('../models/index')
-const bcrypt = require('bcrypt')
+const bcrypt = require('bcryptjs')
 
 // 로그인 전략
 const strategy_login = new LocalStrategy({
