@@ -248,4 +248,95 @@ router.post('/rating/:reviewed_user_id', isLoggedIn, async (req, res, next) => {
 })
 
 
+/**
+ * @swagger
+ * /user-info/comments/{reviewed_user_id}:
+ *  get:
+ *    summary: 유저의 상세정보 페이지 요청
+ *    tags:
+ *      - USER-INFO
+ *    parameters:
+ *      - name: reviewed_user_id
+ *        in: path
+ *        required: true
+ *        description: 평가받는 유저의 인덱스를 준다.
+ *        schema:
+ *          type: integer
+ *    responses:
+ *      200:
+ *        description: 해당하는 유저에 대한 평가 목록이 있는 객체들의 배열로 나타난다.
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                index:
+ *                  type: integer
+ *                  example: 1
+ *                reviewer_index:
+ *                  type: integer
+ *                  example: 4
+ *                score:
+ *                  type: integer
+ *                  example: 6
+ *                comment:
+ *                  type: string
+ *                  example: good reviewer
+ *                User:
+ *                  type: object
+ *                  example: {name: 평가한 유저의 닉네임}
+ *      300:
+ *        description: 상세 정보에 해당하는 유저에 대한 코멘트가 없는경우
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties: 
+ *                success: 
+ *                  type: boolean             
+ *                  example: false
+ *                message:
+ *                  type: string
+ *                  example: 유저에 해당하는 코멘트가 없습니다.
+ *      401:
+ *        description: 잘못된 토큰을 전달했을때
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/UnvalidToken'
+ *      419:
+ *        description: 토큰이 만료된 경우
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/ExpiredToken'
+ *      500:
+ *        description: 서버 에러    
+ */
+// 유저 리뷰의 인덱스, 리뷰한 유저의 인덱스, 리뷰한 유저의 닉네임, 리뷰 점수 및 코멘트를 전달한다.
+// 해당 유저의 평가목록을 불러오는 api
+router.get('/comments/:reviewed_user_id', isLoggedIn, async (req, res, next) => {
+  try {
+    const reviewedUserIndex = req.params.reviewed_user_id   // 평가 받은 유저의 인덱스
+    // 평가 받은 유저에 해당하는 코멘트들을 가져온다.
+    const scoreAndComments = await User_review.findAll({
+      where: {
+        reviewed_index: reviewedUserIndex
+      },
+      attributes: ['index', 'reviewer_index', 'score', 'comment'],
+      include: {
+        model: User,
+        attributes: ['name'],
+      }
+    })
+    
+    if (scoreAndComments.length === 0) return res.status(300).json({success: false, message: '유저에 해당하는 코멘트가 없습니다.'})
+  
+    res.json(scoreAndComments)
+  } catch (err) {
+    console.error(err)
+    next(err)
+  }
+})
+
 module.exports = router

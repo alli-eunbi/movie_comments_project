@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken')
 // 유저가 확인되었다면 req.user에 user_index와 user_id로 이루어진 객체를 할당한다.
 exports.isLoggedIn = (req, res, next) => {
   try {
-    console.log(req.cookies)
+    // console.log(req.cookies)
     const decoded = jwt.verify(req.cookies.accessToken, process.env.JWT_SECRET_KEY)
     
     req.user = decoded
