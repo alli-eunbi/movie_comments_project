@@ -1,6 +1,6 @@
 const express = require('express')
 const {isLoggedIn, isNotLoggedIn} = require('./middleware')
-const { User, Movie, Movie_review, Want_watch } = require('../models/index')
+const { User, Movie, Movie_review, Want_watch, User_review } = require('../models/index')
 
 const router = express.Router()
 
@@ -28,7 +28,7 @@ const router = express.Router()
  *              properties:
  *                comment_movies:
  *                  type: object
- *                  example: {comment: 'good', movie_index: 3, poster_url: 'url', score: 8, title: '실종 2'}
+ *                  example: [{comment: 'good', movie_index: 3, poster_url: 'url', score: 8, title: '실종 2'},...]
  *                temperature:
  *                  type: integer
  *                  example: 6
@@ -136,5 +136,116 @@ router.get('/:user_id', isLoggedIn, async (req, res, next) => {
     next(err)
   }
 })
+
+
+
+/**
+ * @swagger
+ * /user-info/rating/{reviewed_user_id}:
+ *  post:
+ *    summary: 유저의 상세정보 페이지 요청
+ *    tags:
+ *      - USER-INFO
+ *    parameters:
+ *      - name: reviewed_user_id
+ *        in: path
+ *        required: true
+ *        description: 평가받는 유저의 인덱스를 준다.
+ *        schema:
+ *          type: integer
+ *    requestBody:
+ *      description: 평가한 점수와 코멘트를 전달한다.
+ *      required: true
+ *      content:
+ *        application/json:
+ *          schema:
+ *            type: object
+ *            properties:
+ *              score:
+ *                type: integer
+ *                example: 6
+ *              comment:
+ *                type: string
+ *                example: very nice
+ *    responses:
+ *      200:
+ *        description: 성공여부와 메시지 업데이트된 유저의 온도를 전달한다.
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                success:
+ *                  type: boolean
+ *                  example: true
+ *                message:
+ *                  type: string
+ *                  example: 유저 평가 성공
+ *                temperature:
+ *                  type: number
+ *                  example: 5.6
+ *      401:
+ *        description: 잘못된 토큰을 전달했을때
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/UnvalidToken'
+ *      419:
+ *        description: 토큰이 만료된 경우
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/ExpiredToken'
+ *      500:
+ *        description: 서버 에러
+ */
+// 유저 평가하는 기능
+router.post('/rating/:reviewed_user_id', isLoggedIn, async (req, res, next) => {
+  try {
+    const reviewedUserIndex = req.params.reviewed_user_id    // 평가받는 유저의 인덱스, 즉 user-info페이지의 유저 인덱스
+  
+    const reviewerUserIndex = req.user.user_index   // 평가하는 유저의 인덱스, 즉 실제 사용하고 있는 유저의 인덱스
+    const { score, comment } = req.body
+
+    // User_review테이블에 데이터 추가하고 User 테이블에 평가받은 유저의 temperature 수정하기
+    await User_review.create({
+      reviewed_index: reviewedUserIndex,
+      reviewer_index: reviewerUserIndex,
+      score,
+      comment
+    })
+  
+    // 평가된 유저의 평가 개수와 점수를 이용해 temperature 업데이트
+    const findAndCount = await User_review.findAndCountAll({
+      where: {
+        reviewed_index: reviewedUserIndex
+      },
+      attributes: ['score']
+    })
+
+    // temperature 업데이트 부분
+    let totalScore = 0;
+    findAndCount.rows.forEach(el => {totalScore += el.score})
+    const newTemperature = (totalScore/findAndCount.count).toFixed(1)
+    console.log('temperature: ', newTemperature)
+
+    await User.update({
+      temperature: newTemperature
+    }, {
+      where: {
+        index: reviewedUserIndex
+      }
+    })
+
+    // 최종 response로 success: true, message: 성공, temperature: newTemperature 전달
+    const response = { success: true, message: '유저 평가 성공', temperature: newTemperature}
+    res.json(response)
+
+  } catch (err) {
+    console.error(err)
+    next(err)
+  }
+})
+
 
 module.exports = router
