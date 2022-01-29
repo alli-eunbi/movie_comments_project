@@ -17,9 +17,9 @@ import InputBase from '@mui/material/InputBase';
 import SearchIcon from '@mui/icons-material/Search';
 
 
-const pages = ['랭킹', '마이페이지', '샘플'];
+const pages = ['랭킹', '로그인', '회원가입'];
 
-const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
+const settings = ['마이페이지'];
 
 const style = {
     backgroundColor : '#46A6A6'
@@ -45,6 +45,7 @@ const NavBar = () => {
         <AppBar position="fixed" className={{style}}>
         <Container maxWidth="xl">
             <Toolbar disableGutters>
+            
             <Typography
                 variant="h6"
                 noWrap
@@ -56,11 +57,12 @@ const NavBar = () => {
 
             <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
                 {pages.map((page) => (
-                <Link to= '/rank'>
+                <Link to= '/info'>
                     <Button
                         key={page}
-                        onClick={handleCloseNavMenu}
-                        sx={{ my: 2, color: 'white', display: 'block' }}
+                        // onClick={handleCloseNavMenu}
+                        sx={{ my: 2, color: 'white', display: 'block'}}
+                        style={{ textDecoration: 'none' }}
                     >
                         {page}
                     </Button>
