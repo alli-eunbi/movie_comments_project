@@ -138,7 +138,6 @@ router.get('/:user_id', isLoggedIn, async (req, res, next) => {
 })
 
 
-
 /**
  * @swagger
  * /user-info/rating/{reviewed_user_id}:
@@ -326,12 +325,18 @@ router.get('/comments/:reviewed_user_id', isLoggedIn, async (req, res, next) => 
 
 /**
  * @swagger
- * /user-info/rating/{user_review_index}:
+ * /user-info/rating/{reviewed_index}/{user_review_index}:
  *  put:
  *    summary: 작성된 유저에 대한 평가를 수정하고 수정 내용을 전달해주는 api
  *    tags:
  *      - USER-INFO
  *    parameters:
+ *      - name: reviewed_index
+ *        in: path
+ *        required: true
+ *        description: 평가 받은 유저의 유저 인덱스
+ *        schema:
+ *          type: integer
  *      - name: user_review_index
  *        in: path
  *        required: true
@@ -352,9 +357,6 @@ router.get('/comments/:reviewed_user_id', isLoggedIn, async (req, res, next) => 
  *              comment:
  *                type: string
  *                example: very nice 
- *              reviewed_index:
- *                type: integer
- *                example: 평가되는 유저의 인덱스 
  *    responses:
  *      200:
  *        description: 해당하는 유저에 대한 평가 목록이 있는 객체들의 배열로 나타난다.
@@ -369,9 +371,25 @@ router.get('/comments/:reviewed_user_id', isLoggedIn, async (req, res, next) => 
  *                message:
  *                  type: string
  *                  example: 평가 수정 완료
+ *                temperature:
+ *                  type: number
+ *                  example: 새로 업데이트된 유저의 온도
  *                new_comment:
  *                  type: object
  *                  example: {index: 유저평가 테이블 인덱스, reviewed_index: 평가된 유저의 인덱스, reviewer_index: 평가한 유저의 인덱스, score: 점수, comment: 평가내용}
+ *      400:
+ *        description: 전달받은 커멘트가 없어서 삭제를 못한 경우
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                success:
+ *                  type: boolean
+ *                  example: false
+ *                message:
+ *                  type: string
+ *                  example: 해당하는 평가혹은 평가에 변화가 없습니다.
  *      401:
  *        description: 잘못된 토큰을 전달했을때
  *        content:
@@ -389,23 +407,29 @@ router.get('/comments/:reviewed_user_id', isLoggedIn, async (req, res, next) => 
  */
 // 유저 평가를 수정하는 api
 // 프론트 서버로부터 score, comment, reviewed_index(상세페이지에 해당하는 유저의 인덱스)를 받는다.
-router.put('/rating/:user_review_index', isLoggedIn, async (req, res, next) => {
+router.put('/rating/:reviewed_index/:user_review_index', isLoggedIn, async (req, res, next) => {
   try {
     // User_review 테이블의 인덱스 번호를 가져온다.
     const UserReviewTableIndex = req.params.user_review_index
+    const reviewed_index = req.params.reviewed_index
     // body에서 수정할 score와 comment, reviewed_index를 받는다.
-    const {score, comment, reviewed_index} = req.body
+    const { score, comment } = req.body
+    const reviewer_index = req.user.user_index
 
     // 머저 전달받은 정보로 테이블을 update시켜준다.
-    await User_review.update({
+    const result = await User_review.update({
       score: score,
       comment: comment
     }, {
       where: {
         index: UserReviewTableIndex,
-        reviewed_index
+        reviewed_index,
+        reviewer_index
       }
     })
+
+    // update한 부분이 없는 경우
+    if (result[0] === 0) return res.status(400).json({success: false, message: '해당하는 평가혹은 평가에 변화가 없습니다.'})
 
     // update시킨 점수를 바탕으로 User테이블의 temperature를 수정해준다.
     const newTemperature = await updateTemperature(reviewed_index)
@@ -426,7 +450,100 @@ router.put('/rating/:user_review_index', isLoggedIn, async (req, res, next) => {
 })
 
 
+/**
+ * @swagger
+ * /user-info/rating/{reviewed_index}/{user_review_index}:
+ *  delete:
+ *    summary: 작성된 유저에 대한 평가를 삭제하는 api
+ *    tags:
+ *      - USER-INFO
+ *    parameters:
+ *      - name: reviewed_index
+ *        in: path
+ *        required: true
+ *        description: 평가 받은 유저의 유저 인덱스
+ *        schema:
+ *          type: integer
+ *      - name: user_review_index
+ *        in: path
+ *        required: true
+ *        description: 삭제하고자 하는 평가의 테이블 인덱스를 전달한다.
+ *        schema:
+ *          type: integer
+ *    responses:
+ *      200:
+ *        description: 성공 여부와 메시지, 새로 업데이트된 유저의 온도를 보내준다.
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                success:
+ *                  type: boolean
+ *                  example: true
+ *                message:
+ *                  type: string
+ *                  example: 평가 삭제 완료
+ *                temperature:
+ *                  type: number
+ *                  example: 새로 업데이트된 유저의 온도
+ *      400:
+ *        description: 전달받은 커멘트가 없어서 삭제를 못한 경우
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                success:
+ *                  type: boolean
+ *                  example: false
+ *                message:
+ *                  type: string
+ *                  example: 해당하는 평가가 없습니다.
+ *      401:
+ *        description: 잘못된 토큰을 전달했을때
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/UnvalidToken'
+ *      419:
+ *        description: 토큰이 만료된 경우
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/ExpiredToken'
+ *      500:
+ *        description: 서버 에러  
+ */
+// 유저 평가 삭제하는 기능 관련 api
+router.delete('/rating/:reviewed_index/:user_review_index', isLoggedIn, async (req, res, next) => {
+  try {
+    const UserReviewTableIndex = req.params.user_review_index   // 삭제하고 싶은 코멘트의 index
+    const reviewed_index = req.params.reviewed_index   // 평가 받은 유저의 아이디
+  
+    const reviewer_index = req.user.user_index  // 평가한 유저의 아이디, 즉 로그인 한 유저가 자신이 평가한 글만 삭제할 수 있다.
+  
+    const result = await User_review.destroy({
+      where: {
+        index: UserReviewTableIndex,
+        reviewed_index,
+        reviewer_index
+      }
+    })
 
+    // 전달받은 커멘트가 없는경우
+    if (result === 0) return res.status(400).json({success: false, message: '해당하는 평가가 없습니다.'})
+
+    // 삭제시킨 코멘트와 점수를 바탕으로 User테이블의 temperature를 수정해준다.
+    const newTemperature = await updateTemperature(reviewed_index)
+
+    res.json({success: true, message: '평가 삭제 완료', temperature: newTemperature})
+
+  } catch (err) {
+    console.error(err)
+    next(err)
+  }
+})
 
 
 module.exports = router

@@ -63,7 +63,8 @@ exports.updateTemperature = async (reviewed_index) => {
   // temperature 업데이트 부분
   let totalScore = 0;
   findAndCount.rows.forEach(el => {totalScore += el.score})
-  const newTemperature = (totalScore/findAndCount.count).toFixed(1)
+  console.log('temp: ', 10 * totalScore/findAndCount.count)
+  const newTemperature = parseFloat(10 * totalScore/findAndCount.count).toFixed(1)
   console.log('temperature: ', newTemperature)
 
   await User.update({
