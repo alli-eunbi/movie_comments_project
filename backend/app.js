@@ -8,6 +8,7 @@ const cookieParser = require('cookie-parser')
 const { sequelize } = require('./models/index')
 const loginRouter = require('./routes/login_pages')
 const userInfoRouter = require('./routes/user_info_pages')
+const userRankingRouter = require('./routes/user_ranking_pages')
 import main from "./api/main";
 const passportConfig = require('./passport/strategies')
 
@@ -49,6 +50,7 @@ app.use(passport.initialize())
 app.use('/user', loginRouter)
 app.use("/", main);
 app.use("/user-info", userInfoRouter);
+app.use("/user-ranking", userRankingRouter);
 
 // swagger 스키마 설정
 /**
@@ -97,6 +99,8 @@ app.use("/user-info", userInfoRouter);
  *    description: 보고싶어요, 영화의 별점 및 코멘트 기능에 관한 api
  *  - name: USER-INFO
  *    description: 유저 상세 페이지
+ *  - name: USER-RANKING
+ *    description: 유저 랭킹 페이지
  */
 
 

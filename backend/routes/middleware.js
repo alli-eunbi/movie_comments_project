@@ -38,9 +38,9 @@ exports.isNotLoggedIn = (req, res, next) => {
 // 로그인상태를 체크하는 함수이다. 로그인이 된 상태라면 req.user를 이용할 수 있다.
 exports.logInChecker = (req, res, next) => {
   try {
-    console.log(req.cookies)
     const decoded = jwt.verify(req.cookies.accessToken, process.env.JWT_SECRET_KEY)
     // 로그인이 된 상태면 req.user에 user_index와 user_id가 있다.
+
     req.user = decoded
     next()
   } catch (err) {
