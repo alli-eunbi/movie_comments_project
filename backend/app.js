@@ -37,17 +37,16 @@ sequelize
     console.error(err);
   });
 
-
 // 필요한 세팅
 app.use(morgan("dev"));
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openapiSpecification));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser(process.env.COOKIE_SECRET))
-app.use(passport.initialize())
+app.use(cookieParser(process.env.COOKIE_SECRET));
+app.use(passport.initialize());
 
 // router 연결
-app.use('/user', loginRouter)
+app.use("/user", loginRouter);
 app.use("/", main);
 app.use("/user-info", userInfoRouter);
 app.use("/user-ranking", userRankingRouter);
@@ -86,7 +85,6 @@ app.use("/user-ranking", userRankingRouter);
  *          example: 유효하지 않은 접근입니다.
  */
 
-
 // 스웨거 영역을 tag로 구분
 /**
  * @swagger
@@ -102,7 +100,6 @@ app.use("/user-ranking", userRankingRouter);
  *  - name: USER-RANKING
  *    description: 유저 랭킹 페이지
  */
-
 
 // 404에러처리 미들웨어
 app.use((req, res, next) => {
