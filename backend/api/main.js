@@ -109,32 +109,53 @@ main.get("/main/movie/:id", async (req, res) => {
 
 //*영화 검색 페이지
 main.get("/main/search/:keyword", logInChecker, async (req, res, next) => {
-  const { keyword } = req.params;
-  if (!keyword) {
-    return (res.statusCode = 400);
-  }
-  const data = await Movie.findAll({
-    where: {
-      title: {
-        [Op.like]: `%${keyword}%`,
-      },
-    },
-  });
-  console.log(data.index);
-  // function ifLogin(){
-  //   if (index!= undefined && id !=undefined){
-  //     data.some(const reviewData = await Movie_review.findAll({
-  //       where: {
-  //         index: data.id
-  //       }
-  //     })
-  // }}
-  const index = req.user.user_index;
-  const id = req.user.user_id;
-  login(idex, id);
+  try {
+    const { keyword } = req.params;
+    const index = req.user.user_index;
+    const isLoggedIn = !!index;
+    console.log(isLoggedIn, "로그인 여부 ");
 
-  res.send(data, 200);
+    if (!keyword) {
+      res.statusCode = 400;
+      return res.send("키워드가 없습니다");
+    }
+
+    //* 해당 키워드의 영화들
+    const movies = await Movie.findAll({
+      where: {
+        title: {
+          [Op.like]: `%${keyword}%`,
+        },
+      },
+      raw: true,
+    });
+    if (isLoggedIn) {
+      //* 나의 좋아요들
+      const likes = await Want_watch.findAll({
+        where: {
+          user_index: index,
+        },
+      });
+      console.log(likes, "좋아요들");
+      //* 해당 키워드 영화들중 내가 좋아요한 영화가 있는지
+      const result = movies.map((_movie) => {
+        if (likes.some((like) => like.movie_id === _movie.id)) {
+          return { ..._movie, isLiked: true };
+        }
+        return _movie;
+      });
+      res.statusCode = 200;
+      return res.send({ data: result });
+    }
+    res.statusCode = 200;
+    return res.send({ data: movies });
+  } catch (e) {
+    console.log(e, "에러");
+    res.statusCode = 500;
+    return res.end();
+  }
 });
+//?20 movie_review.find(user_id,movie_id)
 
 main.post("/services/like/:movie_id", async (req, res) => {
   const { movie_id } = req.params;

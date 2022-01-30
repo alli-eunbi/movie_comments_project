@@ -5,12 +5,10 @@ const jwt = require("jsonwebtoken");
 // 유저가 확인되었다면 req.user에 user_index와 user_id로 이루어진 객체를 할당한다.
 exports.isLoggedIn = (req, res, next) => {
   try {
-    console.log(req.cookies);
     const decoded = jwt.verify(
       req.cookies.accessToken,
       process.env.JWT_SECRET_KEY
     );
-
     req.user = decoded;
     next();
   } catch (err) {
@@ -56,6 +54,7 @@ exports.logInChecker = (req, res, next) => {
       req.cookies.accessToken,
       process.env.JWT_SECRET_KEY
     );
+    console.log(decoded, "디코드");
     // 로그인이 된 상태면 req.user에 user_index와 user_id가 있다.
     req.user = decoded;
     next();
