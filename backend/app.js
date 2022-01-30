@@ -1,14 +1,14 @@
 import main from "./api/main";
-const express = require('express')
-const morgan = require('morgan')
-require('dotenv').config()
-const swaggerUi = require('swagger-ui-express')
-const swaggerJsdoc = require('swagger-jsdoc')
-const passport = require('passport')
-const cookieParser = require('cookie-parser')
-const { sequelize } = require('./models/index')
-const loginRouter = require('./routes/login_pages')
-const passportConfig = require('./passport/strategies')
+const express = require("express");
+const morgan = require("morgan");
+require("dotenv").config();
+const swaggerUi = require("swagger-ui-express");
+const swaggerJsdoc = require("swagger-jsdoc");
+const passport = require("passport");
+const cookieParser = require("cookie-parser");
+const { sequelize } = require("./models/index");
+const loginRouter = require("./routes/login_pages");
+const passportConfig = require("./passport/strategies");
 
 const options = {
   definition: {
@@ -24,7 +24,7 @@ const options = {
 };
 const openapiSpecification = swaggerJsdoc(options);
 
-app = express();
+const app = express();
 app.set("port", process.env.PORT || 5000);
 sequelize
   .sync({ force: false })
@@ -35,19 +35,17 @@ sequelize
     console.error(err);
   });
 
-
 // 필요한 세팅
 app.use(morgan("dev"));
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openapiSpecification));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser(process.env.COOKIE_SECRET))
-app.use(passport.initialize())
+app.use(cookieParser(process.env.COOKIE_SECRET));
+app.use(passport.initialize());
 
 // router 연결
-app.use('/user', loginRouter)
+app.use("/user", loginRouter);
 app.use("/", main);
-
 
 // 스웨거 영역을 tag로 구분
 /**
@@ -62,7 +60,6 @@ app.use("/", main);
  *  - name: USER-INFO
  *    description: 유저 상세 페이지
  */
-
 
 // 404에러처리 미들웨어
 app.use((req, res, next) => {

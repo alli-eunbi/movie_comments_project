@@ -31,8 +31,11 @@ function connect() {
           console.log("에러", e);
         });
     });
+  });
+  connection.on("error", function (err) {
+    console.log("db error", err);
     if (err.code === "PROTOCOL_CONNECTION_LOST") {
-      return connect();
+      handleDisconnect(); // Connection to the MySQL server is usually handleDisconnect(); // lost due to either server restart, or a } else { // connnection idle timeout (the wait_timeout throw err; // server variable configures this) } });
     } else {
       throw err;
     }
