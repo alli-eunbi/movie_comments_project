@@ -4,19 +4,17 @@ import styled from 'styled-components';
 function shuffle(array) {
     array.sort(() => Math.random() - 0.2);
 }
- 
 
 export default function Movies (){
     return (
         <Container className="movie_list">
-            {movie.data.map((movie, index) => {
-                console.log(index)
-                return <Box key={index}>
-                    {movie.poster_url ? <MovieImg src ={movie.poster_url} alt={movie.title}>
+            {movie.data.map((movie, index) => (             
+                <Box key={index}>
+                    {movie.poster_url ? <MovieImg src={movie.poster_url} alt={movie.title}>
                         </MovieImg>
                     : <h5>{movie.title}</h5>}
                 </Box>
-            })}
+            ))}
         </Container>
         
     )
@@ -27,7 +25,6 @@ const MovieImg = styled.img`
     width: 100%;
     height: 100%;
     border-radius: 12px;
-
     background-size: cover;
 `
 const Container = styled.div`
