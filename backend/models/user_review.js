@@ -16,6 +16,12 @@ module.exports = class User_review extends Model {
       reviewer_index: {
         type: DataTypes.INTEGER,
         allowNull: false
+      },
+      score: {
+        type: DataTypes.INTEGER,
+      },
+      comment: {
+        type: DataTypes.TEXT
       }
     }, {
       sequelize,

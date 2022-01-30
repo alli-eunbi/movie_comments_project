@@ -1,4 +1,3 @@
-import main from "./api/main";
 const express = require('express')
 const morgan = require('morgan')
 require('dotenv').config()
@@ -8,6 +7,9 @@ const passport = require('passport')
 const cookieParser = require('cookie-parser')
 const { sequelize } = require('./models/index')
 const loginRouter = require('./routes/login_pages')
+const userInfoRouter = require('./routes/user_info_pages')
+const userRankingRouter = require('./routes/user_ranking_pages')
+import main from "./api/main";
 const passportConfig = require('./passport/strategies')
 
 const options = {
@@ -47,6 +49,42 @@ app.use(passport.initialize())
 // router 연결
 app.use('/user', loginRouter)
 app.use("/", main);
+app.use("/user-info", userInfoRouter);
+app.use("/user-ranking", userRankingRouter);
+
+// swagger 스키마 설정
+/**
+ * @swagger
+ * components:
+ *  schemas:
+ *    UnvalidToken:
+ *      description: 잘못된 토큰을 전달했을때
+ *      properties:
+ *        success:
+ *          type: boolean
+ *          example: false
+ *        message:
+ *          type: string
+ *          example: 유효하지 않은 토큰입니다.
+ *    ExpiredToken:
+ *      description: 토큰이 만료된 경우
+ *      properties:
+ *        success:
+ *          type: boolean
+ *          example: false
+ *        message:
+ *          type: string
+ *          example: 만료된 토큰입니다.
+ *    IsNotLoggedIn:
+ *      description: 로그인이 된 상태에서 접근하면 에러가 발생하는 경우(예를 들어 로그인)
+ *      properties:
+ *        success:
+ *          type: boolean
+ *          example: false
+ *        message:
+ *          type: string
+ *          example: 유효하지 않은 접근입니다.
+ */
 
 
 // 스웨거 영역을 tag로 구분
@@ -61,6 +99,8 @@ app.use("/", main);
  *    description: 보고싶어요, 영화의 별점 및 코멘트 기능에 관한 api
  *  - name: USER-INFO
  *    description: 유저 상세 페이지
+ *  - name: USER-RANKING
+ *    description: 유저 랭킹 페이지
  */
 
 
