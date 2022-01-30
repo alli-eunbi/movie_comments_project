@@ -44,7 +44,7 @@ main.get("/movies", logInChecker, async (req, res) => {
 
       //* 해당 키워드 영화들중 내가 좋아요한 영화가 있는지
       const result = movies.map((_movie) => {
-        if (likes.some((like) => like.movie_id === _movie.id)) {
+        if (likes.some((like) => like.movie_index === _movie.index)) {
           return { ..._movie, isLiked: true };
         }
         return { ..._movie, isLiked: false };
@@ -66,13 +66,14 @@ main.get("/movies", logInChecker, async (req, res) => {
 main.get("/movies/search", logInChecker, async (req, res, next) => {
   try {
     const { keyword } = req.query;
+    console.log(keyword);
     const index = req?.user?.user_index;
     const isLoggedIn = !!index;
     console.log(isLoggedIn, "로그인 여부 ");
 
     if (!keyword) {
       res.statusCode = 400;
-      return res.send("키워드가 없습니다");
+      return res.send({ message: "키워드가 없습니다" });
     }
 
     //* 해당 키워드의 영화들
@@ -94,10 +95,10 @@ main.get("/movies/search", logInChecker, async (req, res, next) => {
       console.log(likes, "좋아요들");
       //* 해당 키워드 영화들중 내가 좋아요한 영화가 있는지
       const result = movies.map((_movie) => {
-        if (likes.some((like) => like.movie_id === _movie.id)) {
+        if (likes.some((like) => like.movie_index === _movie.index)) {
           return { ..._movie, isLiked: true };
         }
-        return _movie;
+        return { ..._movie, isLiked: false };
       });
       res.statusCode = 200;
       return res.send({ data: result });
@@ -113,22 +114,23 @@ main.get("/movies/search", logInChecker, async (req, res, next) => {
 
 main.post("/movies/:movie_id/like", logInChecker, async (req, res) => {
   const { movie_id } = req.params;
-  const { user_id } = req.user;
+  console.log(movie_id);
+  const { user_index } = req.user;
   if (!movie_id) {
     res.statusCode = 400;
     return res.end();
   }
-  if (!user_id) {
+  if (!user_index) {
     res.statusCode = 401;
     return res.end();
   }
   try {
     await Want_watch.create({
-      user_index: user_id,
+      user_index: user_index,
       movie_index: movie_id,
     });
     res.statusCode = 200;
-    res.send("ok");
+    res.send({ message: "좋아요 등록 완료" });
   } catch (e) {
     console.error(e);
     res.statusCode = 500;
@@ -138,24 +140,24 @@ main.post("/movies/:movie_id/like", logInChecker, async (req, res) => {
 
 main.delete("/movies/:movie_id/dislike", logInChecker, async (req, res) => {
   const { movie_id } = req.params;
-  const { user_id } = req.user;
+  const { user_index } = req.user;
   if (!movie_id) {
     res.statusCode = 400;
     return res.end();
   }
-  if (!user_id) {
+  if (!user_index) {
     res.statusCode = 401;
     return res.end();
   }
   try {
     await Want_watch.destroy({
       where: {
-        user_index: user_id,
+        user_index: user_index,
         movie_index: movie_id,
       },
     });
     res.statusCode = 200;
-    return res.end();
+    return res.send({ message: "좋아요 취소 완료" });
   } catch (e) {
     res.statusCode = 500;
     return res.end();
@@ -164,14 +166,14 @@ main.delete("/movies/:movie_id/dislike", logInChecker, async (req, res) => {
 
 main.post("/movies/:movie_id/rating", logInChecker, async (req, res) => {
   const { movie_id } = req.params;
-  const { user_id } = req.user;
+  const { user_index } = req.user;
   const { rating } = req.body;
 
   if (!movie_id) {
     res.statusCode = 400;
     return res.end();
   }
-  if (!user_id) {
+  if (!user_index) {
     res.statusCode = 401;
     return res.end();
   }
@@ -181,12 +183,12 @@ main.post("/movies/:movie_id/rating", logInChecker, async (req, res) => {
   }
   try {
     await Movie_review.create({
-      user_index: user_id,
+      user_index: user_index,
       movie_index: movie_id,
       score: rating,
     });
     res.statusCode = 200;
-    return res.end();
+    return res.send({ message: "평점 수정 완료" });
   } catch (e) {
     res.statusCode = 500;
     return res.end();
@@ -197,13 +199,13 @@ main.post("/movies/:movie_id/rating", logInChecker, async (req, res) => {
 main.post("/movies/:movie_id/comment", logInChecker, async (req, res) => {
   const { movie_id } = req.params;
   const { text } = req.body;
-  const { user_id } = req.user;
+  const { user_index } = req.user;
 
   if (!movie_id) {
     res.statusCode = 400;
     return res.end();
   }
-  if (!user_id) {
+  if (!user_index) {
     res.statusCode = 401;
     return res.end();
   }
@@ -213,12 +215,12 @@ main.post("/movies/:movie_id/comment", logInChecker, async (req, res) => {
   }
   try {
     await Movie_review.create({
-      user_index: user_id,
+      user_index: user_index,
       movie_index: movie_id,
       comment: text,
     });
     res.statusCode = 200;
-    return res.end();
+    return res.send({ message: "평가 등록 완료" });
   } catch (e) {
     res.statusCode = 500;
     return res.end();
@@ -229,12 +231,12 @@ main.post("/movies/:movie_id/comment", logInChecker, async (req, res) => {
 main.put("/movies/:movie_id/comment", logInChecker, async (req, res) => {
   const { movie_id } = req.params;
   const { text } = req.body;
-  const { user_id } = req.user;
+  const { user_index } = req.user;
   if (!movie_id) {
     res.statusCode = 400;
     return res.end();
   }
-  if (!user_id) {
+  if (!user_index) {
     res.statusCode = 401;
     return res.end();
   }
@@ -244,7 +246,7 @@ main.put("/movies/:movie_id/comment", logInChecker, async (req, res) => {
   }
   try {
     const exist = await Movie_review.findOne({
-      where: { user_index: user_id, movie_index: movie_id },
+      where: { user_index: user_index, movie_index: movie_id },
     });
     if (!exist) {
       res.statusCode = 404;
@@ -254,10 +256,10 @@ main.put("/movies/:movie_id/comment", logInChecker, async (req, res) => {
       {
         comment: text,
       },
-      { where: { user_index: user_id, movie_index: movie_id } }
+      { where: { user_index: user_index, movie_index: movie_id } }
     );
     res.statusCode = 200;
-    return res.end();
+    return res.send({ message: "평가 수정 완료" });
   } catch (e) {
     res.statusCode = 500;
     return res.end();
@@ -266,12 +268,12 @@ main.put("/movies/:movie_id/comment", logInChecker, async (req, res) => {
 
 main.delete("/movies/:movie_id/comment", logInChecker, async (req, res) => {
   const { movie_id } = req.params;
-  const { user_id } = req.user;
+  const { user_index } = req.user;
   if (!movie_id) {
     res.statusCode = 400;
     return res.end();
   }
-  if (!user_id) {
+  if (!user_index) {
     res.statusCode = 401;
     return res.end();
   }
@@ -285,7 +287,7 @@ main.delete("/movies/:movie_id/comment", logInChecker, async (req, res) => {
     }
     await Movie_review.destroy({
       where: {
-        user_index: user_id,
+        user_index: user_index,
         movie_index: movie_id,
       },
     });
