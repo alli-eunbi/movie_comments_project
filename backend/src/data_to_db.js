@@ -9,28 +9,36 @@ const file1 = fs.readFileSync("./movie-crawler/final.json", {
 const { data: movies } = JSON.parse(file1);
 
 //* mysql 연결 설정
-var connection = mysql.createConnection({
-  host: "mysql",
-  user: "root",
-  password: "password",
-  database: "data_project",
-});
-
-connection.connect(function (err) {
-  if (err) throw err;
-  console.log("Connected to MySQL");
-  movies.forEach((_movie) => {
-    const test = Movie.build(_movie);
-    test
-      .save()
-      .then((res) => {
-        console.log("생성완료");
-      })
-      .catch((e) => {
-        console.log("에러", e);
-      });
+function connect() {
+  var connection = mysql.createConnection({
+    host: "mysql",
+    user: "root",
+    password: "password",
+    database: "data_project",
   });
-});
+
+  connection.connect(function (err) {
+    if (err) throw err;
+    console.log("Connected to MySQL");
+    movies.forEach((_movie) => {
+      const test = Movie.build(_movie);
+      test
+        .save()
+        .then((res) => {
+          console.log("생성완료");
+        })
+        .catch((e) => {
+          console.log("에러", e);
+        });
+    });
+    if (err.code === "PROTOCOL_CONNECTION_LOST") {
+      return connect();
+    } else {
+      throw err;
+    }
+  });
+}
+connect();
 
 // Movie.init(connection);
 // async () => {
