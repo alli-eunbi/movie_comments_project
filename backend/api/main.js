@@ -1,4 +1,5 @@
 //const dotenv = require("dotenv");
+//*페이지 네이션 추가, 주석 추가하기, 코드 리팩토링, error케이스 추가 생산
 const express = require("express");
 const {
   Movie,
@@ -9,109 +10,63 @@ const {
   User_review,
 } = require("../models");
 const Sequelize = require("sequelize");
+const { logInChecker } = require("../routes/middleware");
+
 const Op = Sequelize.Op;
 //dotenv.config()
 const main = express.Router();
-const { logInChecker } = require("../routes/middleware");
 
-//* 메인 페이지 영화 리스트
-// /**
-//  * @swagger
-//  * /main/movies:
-//  *  get:
-//  *    summary: 메인페이지 영화 리스트
-//  *    tags:
-//  *    - USER
-//  *    ApiKeyAuth:
-//  *      type: apiKey
-//  *      in: header
-//  *      name: accessToken
-//  *    responses:
-//  *      200:
-//  *        description: 로그아웃 성공
-//  *        content:
-//  *          application/json:
-//  *            schema:
-//  *              type: object
-//  *              properties:
-//  *                success:
-//  *                  type: boolean
-//  *                  example: true
-//  *                message:
-//  *                  type: string
-//  *                  example: 로그아웃 성공
-//  *      401:
-//  *        description: 토큰이 잘못된 경우
-//  *        content:
-//  *          application/json:
-//  *            schema:
-//  *              type: object
-//  *              properties:
-//  *                success:
-//  *                  type: boolean
-//  *                  example: false
-//  *                message:
-//  *                  type: string
-//  *                  example: 유효하지 않은 토큰입니다.
-//  *      419:
-//  *        description: 토큰이 만료된 경우 기본은 1일이 지나야 만료됨
-//  *        content:
-//  *          application/json:
-//  *            schema:
-//  *              type: object
-//  *              properties:
-//  *                success:
-//  *                  type: boolean
-//  *                  example: false
-//  *                message:
-//  *                  type: string
-//  *                  example: 만료된 토큰입니다.
-//  *      500:
-//  *        description: 서버 에러
-//  */
-main.get("/main/movies", async (req, res) => {
-  const data = await Movie.findAll({
-    order: sequelize.random(),
-    attributes: ["index", "poster_url"],
-    where: {
-      poster_url: {
-        [Op.ne]: null,
+main.get("/movies", logInChecker, async (req, res) => {
+  //TODO 페이지네이션하기
+  //? url query 로 keyword받기
+  const index = req?.user?.user_index;
+  const isLoggedIn = !!index;
+  try {
+    const movies = await Movie.findAll({
+      order: sequelize.random(),
+      attributes: ["index", "poster_url"],
+      where: {
+        poster_url: {
+          [Op.ne]: null,
+        },
       },
-    },
-    limit: 8,
-    subQuery: false,
-  });
-  res.send(data, 200);
-});
+      limit: 8,
+      subQuery: false,
+    });
 
-//* 영화 상세 페이지
-main.get("/main/movie/:id", async (req, res) => {
-  const { id } = req.params;
-  if (!id) {
-    return (res.statusCode = 400);
+    if (isLoggedIn) {
+      //* 나의 좋아요들
+      const likes = await Want_watch.findAll({
+        where: {
+          user_index: index,
+        },
+      });
+
+      //* 해당 키워드 영화들중 내가 좋아요한 영화가 있는지
+      const result = movies.map((_movie) => {
+        if (likes.some((like) => like.movie_id === _movie.id)) {
+          return { ..._movie, isLiked: true };
+        }
+        return { ..._movie, isLiked: false };
+      });
+
+      res.statusCode = 200;
+      return res.send({ data: result });
+    }
+    res.statusCode = 200;
+    return res.send({ data: movies });
+  } catch (e) {
+    console.log(e, "에러");
+    res.statusCode = 500;
+    return res.end();
   }
-  const movie_info = await Movie.findOne({
-    where: {
-      index: id,
-    },
-  });
-  const review_data = await Movie_review.findAll({
-    where: {
-      movie_index: id,
-    },
-  });
-  if (movie_info === 0) {
-    return (res.statusCode = 400);
-  }
-  res.send({ movie_info, review_data }, 200);
 });
-//보고싶어요 기록이랑 (본인)평점 기록 보게하는거 구현하기
 
 //*영화 검색 페이지
-main.get("/main/search/:keyword", logInChecker, async (req, res, next) => {
+main.get("/movies/search", logInChecker, async (req, res, next) => {
   try {
-    const { keyword } = req.params;
-    const index = req.user.user_index;
+    const { keyword } = req.query;
+    const index = req?.user?.user_index;
     const isLoggedIn = !!index;
     console.log(isLoggedIn, "로그인 여부 ");
 
@@ -155,83 +110,191 @@ main.get("/main/search/:keyword", logInChecker, async (req, res, next) => {
     return res.end();
   }
 });
-//?20 movie_review.find(user_id,movie_id)
 
-main.post("/services/like/:movie_id", async (req, res) => {
+main.post("/movies/:movie_id/like", logInChecker, async (req, res) => {
   const { movie_id } = req.params;
-  if (!movie_index || !user_id) {
-    return (res.statusCode = 400);
+  const { user_id } = req.user;
+  if (!movie_id) {
+    res.statusCode = 400;
+    return res.end();
   }
-  await Want_watch.create({
-    user_index: user_id,
-    movie_index: movie_id,
-  });
-  res.statusCode(200);
-});
-
-main.delete("/services/unlike/:movie_id", async (req, res) => {
-  const { movie_id } = req.params;
-  if (!movie_index || !user_id) {
-    return (res.statusCode = 400);
+  if (!user_id) {
+    res.statusCode = 401;
+    return res.end();
   }
-  Want_watch.destroy({
-    where: {
+  try {
+    await Want_watch.create({
       user_index: user_id,
       movie_index: movie_id,
-    },
-  });
-  res.statusCode(200);
-});
-// 찾았는데 없다면 추가하기
-
-main.post("/services/ratings/:movie_id", async (req, res) => {
-  const { movie_id } = req.params;
-  const { rating } = req.body;
-  if (!movie_index || !user_id || rating) {
-    return (res.statusCode = 400);
+    });
+    res.statusCode = 200;
+    res.send("ok");
+  } catch (e) {
+    console.error(e);
+    res.statusCode = 500;
+    res.end();
   }
-  await Movie_review.create({
-    user_index: user_id,
-    movie_index: movie_id,
-    score: rating,
-  });
+});
+
+main.delete("/movies/:movie_id/dislike", logInChecker, async (req, res) => {
+  const { movie_id } = req.params;
+  const { user_id } = req.user;
+  if (!movie_id) {
+    res.statusCode = 400;
+    return res.end();
+  }
+  if (!user_id) {
+    res.statusCode = 401;
+    return res.end();
+  }
+  try {
+    await Want_watch.destroy({
+      where: {
+        user_index: user_id,
+        movie_index: movie_id,
+      },
+    });
+    res.statusCode = 200;
+    return res.end();
+  } catch (e) {
+    res.statusCode = 500;
+    return res.end();
+  }
+});
+
+main.post("/movies/:movie_id/rating", logInChecker, async (req, res) => {
+  const { movie_id } = req.params;
+  const { user_id } = req.user;
+  const { rating } = req.body;
+
+  if (!movie_id) {
+    res.statusCode = 400;
+    return res.end();
+  }
+  if (!user_id) {
+    res.statusCode = 401;
+    return res.end();
+  }
+  if (!rating) {
+    res.statusCode = 400;
+    return res.end();
+  }
+  try {
+    await Movie_review.create({
+      user_index: user_id,
+      movie_index: movie_id,
+      score: rating,
+    });
+    res.statusCode = 200;
+    return res.end();
+  } catch (e) {
+    res.statusCode = 500;
+    return res.end();
+  }
 });
 //이미 있다면? 추가하기 혹은 FindorCreate로 바꾸기, 유저 테이블의 review_num 추가해주기
 
-main.post("/services/comment/:movie_id", async (req, res) => {
+main.post("/movies/:movie_id/comment", logInChecker, async (req, res) => {
   const { movie_id } = req.params;
   const { text } = req.body;
-  if (!movie_index || !user_id || text) {
-    return (res.statusCode = 400);
+  const { user_id } = req.user;
+
+  if (!movie_id) {
+    res.statusCode = 400;
+    return res.end();
   }
-  await Movie_review.create({
-    user_index: user_id,
-    movie_index: movie_id,
-    comment: text,
-  });
+  if (!user_id) {
+    res.statusCode = 401;
+    return res.end();
+  }
+  if (!text) {
+    res.statusCode = 400;
+    return res.end();
+  }
+  try {
+    await Movie_review.create({
+      user_index: user_id,
+      movie_index: movie_id,
+      comment: text,
+    });
+    res.statusCode = 200;
+    return res.end();
+  } catch (e) {
+    res.statusCode = 500;
+    return res.end();
+  }
 });
 //이미 있다면? 추가하기, 유저 테이블의 review_num 추가해주기
 
-main.put("/services/comment/:movie_id", async (req, res) => {
+main.put("/movies/:movie_id/comment", logInChecker, async (req, res) => {
   const { movie_id } = req.params;
   const { text } = req.body;
-  if (!movie_index || !user_id || text) {
-    return (res.statusCode = 400);
+  const { user_id } = req.user;
+  if (!movie_id) {
+    res.statusCode = 400;
+    return res.end();
   }
-  // await Movie_review.findOne({
-
-  // })
+  if (!user_id) {
+    res.statusCode = 401;
+    return res.end();
+  }
+  if (!text) {
+    res.statusCode = 400;
+    return res.end();
+  }
+  try {
+    const exist = await Movie_review.findOne({
+      where: { user_index: user_id, movie_index: movie_id },
+    });
+    if (!exist) {
+      res.statusCode = 404;
+      return res.end();
+    }
+    await Movie_review.update(
+      {
+        comment: text,
+      },
+      { where: { user_index: user_id, movie_index: movie_id } }
+    );
+    res.statusCode = 200;
+    return res.end();
+  } catch (e) {
+    res.statusCode = 500;
+    return res.end();
+  }
 });
 
-main.delete("/services/comment/:movie_id", async (req, res) => {
+main.delete("/movies/:movie_id/comment", logInChecker, async (req, res) => {
   const { movie_id } = req.params;
-  const { text } = req.body;
-  if (!movie_index || !user_id || text) {
-    return (res.statusCode = 400);
+  const { user_id } = req.user;
+  if (!movie_id) {
+    res.statusCode = 400;
+    return res.end();
   }
-  // await Movie_review.findOne({
-
-  // })
+  if (!user_id) {
+    res.statusCode = 401;
+    return res.end();
+  }
+  try {
+    const exist = await Movie_review.findOne({
+      where: { user_index: user_id, movie_index: movie_id },
+    });
+    if (!exist) {
+      res.statusCode = 404;
+      return res.end();
+    }
+    await Movie_review.destroy({
+      where: {
+        user_index: user_id,
+        movie_index: movie_id,
+      },
+    });
+    res.statusCode = 200;
+    return res.end();
+  } catch (e) {
+    res.statusCode = 500;
+    return res.end();
+  }
 });
 
 export default main;
