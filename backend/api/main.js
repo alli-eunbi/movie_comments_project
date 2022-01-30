@@ -1,5 +1,5 @@
 //const dotenv = require("dotenv");
-//*페이지 네이션 추가, 주석 추가하기, 코드 리팩토링, error케이스 추가 생산
+//*페이지 네이션 추가, 주석 추가하기, 코드 리팩토링, error케이스 추가 생산, 라우터 분리
 const express = require("express");
 const {
   Movie,
