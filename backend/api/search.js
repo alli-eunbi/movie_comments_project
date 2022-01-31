@@ -18,52 +18,43 @@ const search = express.Router();
 //스웨거 사용
 /**
  * @swagger
- *  /movies/search:
- *    get:
- *      tags: [MAIN]
- *      description: "/movies/search?keyword=검색어 로 영화 데이터 조회"
- *      produces:
- *      - application/json
- *      parameters:
- *      - in: query
- *        name: keyword
- *        required : true
+ * /movies/search:
+ *  get:
+ *    summary: 영화 검색 페이지
+ *    tags:
+ *      - MAIN
+ *    parameters:
+ *      - name: keyword
+ *        in: path
+ *        required: true
+ *        description: 검색어
  *        schema:
- *           type: string
- *        description: "검색어"
- *        responses:
- *           "200":
- *          description: 검색어 기반 영화 조회 성공, 로그인된 경우만 "isliked"가 true나 false로 보내짐, 로그인이 되어 있지 않을 경우 "isliked"는 없음.
- *          content:
+ *          type: string
+ *    responses:
+ *      200:
+ *        description: 검색결과 데이터 전달 성공, isLiked는 로그인 하지 않았을 경우 data에 포함되지 않음. 로그인 되어 있는 경우 isLiked는 true 혹은 false로 전송
+ *        content:
  *          application/json:
  *            schema:
  *              type: object
  *              properties:
- *                ok:
- *                  type: boolean
  *                data:
- *                  type: string
- *                  example:
- *                data": [
- *                  { "index": 221,
- *                  "title": "The Monster of Mangatiti",
- *                  "genre": "다큐멘터리",
- *                  "plot": "1980년대 외딴 농장에서 포악한 약탈자에게 포로로 잡힌 불굴의 십대의 이야기를 드라마로 구성한 충격 실화",
- *                  "publish_year": 2015,
- *                  "poster_url": "https://movie-phinf.pstatic.net/20160530_103/1464575780269B9XaM_JPEG/movie_image.jpg?type=m203_290_2",
- *                  "imdb_score": 6.2,
- *                  "naver_user_score": 0,
- *                  "naver_user_count": 0,
- *                  "naver_expert_score": 0,
- *                  "naver_expert_count": 0,
- *                  "isLiked": false
- *                  }]
- *            "400":
- *              description: 검색어 없는 경우
- *               example: 키워드가 없습니다.
- *            "500":
- *              description: 서버 내부 에러
+ *                  type: object
+ *                  example: {"data":[{"index":5,"title":"춤추는 남자들","genre":"드라마","plot":"동성애자인 아흐메트는 남성 벨리댄서와 연인에게 자극 받아, 보수적인 가족에게 동성애자임을 밝히지만 이는 비극적인 결과를 낳는다.","publish_year":2012,"poster_url":"https://movie-phinf.pstatic.net/20180831_61/15356896197711rW9C_JPEG/movie_image.jpg?type=m203_290_2","imdb_score":0,"naver_user_score":0,"naver_user_count":0,"naver_expert_score":0,"naver_expert_count":0, "isLiked" : true}]}
+ *      400:
+ *        description: 키워드가 전달되지 않은 경우
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type : object
+ *              properties:
+ *                message:
+ *                  type: object
+ *                  example: {"message":"키워드가 없습니다"}
+ *      500:
+ *        description: 서버 내부 에러
  */
+
 search.get("/movies/search", logInChecker, async (req, res, next) => {
   try {
     const { keyword } = req.query;
@@ -113,6 +104,36 @@ search.get("/movies/search", logInChecker, async (req, res, next) => {
   }
 });
 
+/**
+ * @swagger
+ * /movies/:movie_id:
+ *  get:
+ *    summary: 영화 상세 페이지
+ *    tags:
+ *      - MAIN
+ *    parameters:
+ *      - name: movie_id
+ *        in: path
+ *        required: true
+ *        description: 영화의 인덱스
+ *        schema:
+ *          type: integer
+ *    responses:
+ *      200:
+ *        description: 영화 상세 데이터 전달 성공, isLiked는 로그인 하지 않았을 경우 data에 포함되지 않음. 로그인 되어 있는 경우 isLiked는 true 혹은 false로 전송
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                data:
+ *                  type: object
+ *                  example: {"data":{"movie_info":{"index":1,"title":"실종 2","genre":"스릴러","plot":"사채까지 쓴 처지에 취업만이 살길인 선영. 각오를 다지며 최종 면접이 있을 산으로 향한다. 뜻하지 않게 목격한 끔찍한 상황, 도망쳐 다다른 곳엔 더한 지옥이 기다리고 있었으니. 살아남으려면 뭐든 해야 한다. 손에 피를 묻힐지라도.","publish_year":2016,"poster_url":"https://movie-phinf.pstatic.net/20171128_221/1511853722091CXitW_JPEG/movie_image.jpg?type=m203_290_2","imdb_score":0,"naver_user_score":3.49,"naver_user_count":254,"naver_expert_score":0,"naver_expert_count":0},"review_data":[{"index":1,"user_index":1,"movie_index":1,"score":null,"comment":"춤추는 사람들 얘기다"}]}
+ *      400:
+ *        description: 영화 인덱스가 전달되지 않은 경우
+ *      500:
+ *        description: 서버 내부 에러
+ */
 //*영화 상세 페이지
 search.get("/movies/:movie_id", logInChecker, async (req, res) => {
   try {

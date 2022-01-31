@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require("cors");
 const morgan = require("morgan");
 require("dotenv").config();
 const swaggerUi = require("swagger-ui-express");
@@ -41,6 +42,7 @@ sequelize
   });
 
 // 필요한 세팅
+app.use(cors());
 app.use(morgan("dev"));
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openapiSpecification));
 app.use(express.json());
