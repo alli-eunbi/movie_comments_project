@@ -7,6 +7,7 @@ services:
       context: ./frontend
 
     volumes:
+      - /app/node_modules
       - ./frontend:/app
 
     container_name: project_frontend
@@ -26,6 +27,7 @@ services:
       context: ./backend
 
     volumes:
+      - /app/node_modules
       - ./backend:/app
 
     container_name: project_backend
