@@ -25,7 +25,7 @@ const search = express.Router();
  *      - MAIN
  *    parameters:
  *      - name: keyword
- *        in: path
+ *        in: query
  *        required: true
  *        description: 검색어
  *        schema:
@@ -40,7 +40,7 @@ const search = express.Router();
  *              properties:
  *                data:
  *                  type: object
- *                  example: {"data":[{"index":5,"title":"춤추는 남자들","genre":"드라마","plot":"동성애자인 아흐메트는 남성 벨리댄서와 연인에게 자극 받아, 보수적인 가족에게 동성애자임을 밝히지만 이는 비극적인 결과를 낳는다.","publish_year":2012,"poster_url":"https://movie-phinf.pstatic.net/20180831_61/15356896197711rW9C_JPEG/movie_image.jpg?type=m203_290_2","imdb_score":0,"naver_user_score":0,"naver_user_count":0,"naver_expert_score":0,"naver_expert_count":0, "isLiked" : true}]}
+ *                  example: [{"index":5,"title":"춤추는 남자들","genre":"드라마","plot":"동성애자인 아흐메트는 남성 벨리댄서와 연인에게 자극 받아, 보수적인 가족에게 동성애자임을 밝히지만 이는 비극적인 결과를 낳는다.","publish_year":2012,"poster_url":"https://movie-phinf.pstatic.net/20180831_61/15356896197711rW9C_JPEG/movie_image.jpg?type=m203_290_2","imdb_score":0,"naver_user_score":0,"naver_user_count":0,"naver_expert_score":0,"naver_expert_count":0, "isLiked" : true}]
  *      400:
  *        description: 키워드가 전달되지 않은 경우
  *        content:
@@ -106,7 +106,7 @@ search.get("/movies/search", logInChecker, async (req, res, next) => {
 
 /**
  * @swagger
- * /movies/:movie_id:
+ * /movies/{movie_id}:
  *  get:
  *    summary: 영화 상세 페이지
  *    tags:
@@ -128,7 +128,7 @@ search.get("/movies/search", logInChecker, async (req, res, next) => {
  *              properties:
  *                data:
  *                  type: object
- *                  example: {"data":{"movie_info":{"index":1,"title":"실종 2","genre":"스릴러","plot":"사채까지 쓴 처지에 취업만이 살길인 선영. 각오를 다지며 최종 면접이 있을 산으로 향한다. 뜻하지 않게 목격한 끔찍한 상황, 도망쳐 다다른 곳엔 더한 지옥이 기다리고 있었으니. 살아남으려면 뭐든 해야 한다. 손에 피를 묻힐지라도.","publish_year":2016,"poster_url":"https://movie-phinf.pstatic.net/20171128_221/1511853722091CXitW_JPEG/movie_image.jpg?type=m203_290_2","imdb_score":0,"naver_user_score":3.49,"naver_user_count":254,"naver_expert_score":0,"naver_expert_count":0},"review_data":[{"index":1,"user_index":1,"movie_index":1,"score":null,"comment":"춤추는 사람들 얘기다"}]}
+ *                  example: {"movie_info":{"index":1,"title":"실종 2","genre":"스릴러","plot":"사채까지 쓴 처지에 취업만이 살길인 선영. 각오를 다지며 최종 면접이 있을 산으로 향한다. 뜻하지 않게 목격한 끔찍한 상황, 도망쳐 다다른 곳엔 더한 지옥이 기다리고 있었으니. 살아남으려면 뭐든 해야 한다. 손에 피를 묻힐지라도.","publish_year":2016,"poster_url":"https://movie-phinf.pstatic.net/20171128_221/1511853722091CXitW_JPEG/movie_image.jpg?type=m203_290_2","imdb_score":0,"naver_user_score":3.49,"naver_user_count":254,"naver_expert_score":0,"naver_expert_count":0},"review_data":[{"index":1,"user_index":1,"movie_index":1,"score":null,"comment":"춤추는 사람들 얘기다"}]}
  *      400:
  *        description: 영화 인덱스가 전달되지 않은 경우
  *      500:
