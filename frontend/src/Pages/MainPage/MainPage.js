@@ -1,8 +1,8 @@
 import { useEffect, useRef } from "react";
 import styled from 'styled-components';
 import Fade from 'react-reveal/Fade' // https://www.react-reveal.com/ 
-import Movies from "../../Components/Movie/Movies";
 import NavBar from "../../Components/NavBar/NavBar";
+import MovieListPage from "./MovieListPage";
 
 function MainPage() {
   const DIVIDER_HEIGHT = 5;
@@ -132,8 +132,7 @@ function MainPage() {
         <Inner>          
           <Box>
             <Fade bottom> 
-              Movie List
-              <Movies/>
+              <MovieListPage/>
             </Fade> 
           </Box>
         </Inner>
