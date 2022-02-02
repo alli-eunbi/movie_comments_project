@@ -37,7 +37,7 @@ const router = express.Router();
  *              password1:
  *                type: string
  *                example: 유저의 비밀번호1
- *              password2:
+ *              confirmpassword:
  *                type: string
  *                example: 유저의 비밀번호2
  *    responses:
@@ -71,7 +71,7 @@ const router = express.Router();
  */
 router.post("/register", isNotLoggedIn, async (req, res, next) => {
   try {
-    const { img, id, name, password1, password2 } = req.body;
+    const { img, id, name, password1, confirmpassword } = req.body;
     // 유저 테이블 내부에 id가 중복인지 확인
     const user = await User.findOne({
       where: {

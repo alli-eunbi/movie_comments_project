@@ -1,4 +1,3 @@
-//const dotenv = require("dotenv");
 //*페이지 네이션 추가, 주석 추가하기, 코드 리팩토링, error케이스 추가 생산, 라우터 분리
 const express = require("express");
 const {
@@ -15,6 +14,29 @@ const { logInChecker } = require("../routes/middleware");
 const Op = Sequelize.Op;
 //dotenv.config()
 const main = express.Router();
+
+//스웨거 사용
+/**
+ * @swagger
+ * /movies:
+ *  get:
+ *    summary: 메인페이지의 영화 포스터 데이터 불러오기
+ *    tags:
+ *      - MAIN
+ *    responses:
+ *      200:
+ *        description: 포스터 8개 데이터 전달 성공, isLiked는 로그인 하지 않았을 경우 data에 포함되지 않음. 로그인 되어 있는 경우 isLiked는 true 혹은 false로 전송
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                data:
+ *                  type: object
+ *                  example: [{"index":6562,"poster_url":"https://movie-phinf.pstatic.net/20170118_31/14847059479790YrAT_JPEG/movie_image.jpg?type=m203_290_2"},{"index":5615,"poster_url":"https://movie-phinf.pstatic.net/20200220_249/15821856046314x21v_JPEG/movie_image.jpg?type=m203_290_2"},{"index":882,"poster_url":"https://movie-phinf.pstatic.net/20111222_108/1324495565302Pc8wc_JPEG/movie_image.jpg?type=m203_290_2"},{"index":2235,"poster_url":"https://movie-phinf.pstatic.net/20111222_8/1324550141503pCeQ4_JPEG/movie_image.jpg?type=m203_290_2"},{"index":2159,"poster_url":"https://movie-phinf.pstatic.net/20210805_300/162814061484975IGc_JPEG/movie_image.jpg?type=m203_290_2"},{"index":5329,"poster_url":"https://movie-phinf.pstatic.net/20111222_285/1324561324283YjFPm_JPEG/movie_image.jpg?type=m203_290_2"},{"index":1692,"poster_url":"https://movie-phinf.pstatic.net/20210723_183/1627015769493LNnaP_JPEG/movie_image.jpg?type=m203_290_2"},{"index":6527,"poster_url":"https://movie-phinf.pstatic.net/20111222_269/1324520502386h95JO_JPEG/movie_image.jpg?type=m203_290_2"}]
+ *      500:
+ *        description: 서버 내부 에러
+ */
 
 main.get("/movies", logInChecker, async (req, res) => {
   //TODO 페이지네이션하기
@@ -57,243 +79,6 @@ main.get("/movies", logInChecker, async (req, res) => {
     return res.send({ data: movies });
   } catch (e) {
     console.log(e, "에러");
-    res.statusCode = 500;
-    return res.end();
-  }
-});
-
-//*영화 검색 페이지
-main.get("/movies/search", logInChecker, async (req, res, next) => {
-  try {
-    const { keyword } = req.query;
-    console.log(keyword);
-    const index = req?.user?.user_index;
-    const isLoggedIn = !!index;
-    console.log(isLoggedIn, "로그인 여부 ");
-
-    if (!keyword) {
-      res.statusCode = 400;
-      return res.send({ message: "키워드가 없습니다" });
-    }
-
-    //* 해당 키워드의 영화들
-    const movies = await Movie.findAll({
-      where: {
-        title: {
-          [Op.like]: `%${keyword}%`,
-        },
-      },
-      raw: true,
-    });
-    if (isLoggedIn) {
-      //* 나의 좋아요들
-      const likes = await Want_watch.findAll({
-        where: {
-          user_index: index,
-        },
-      });
-      console.log(likes, "좋아요들");
-      //* 해당 키워드 영화들중 내가 좋아요한 영화가 있는지
-      const result = movies.map((_movie) => {
-        if (likes.some((like) => like.movie_index === _movie.index)) {
-          return { ..._movie, isLiked: true };
-        }
-        return { ..._movie, isLiked: false };
-      });
-      res.statusCode = 200;
-      return res.send({ data: result });
-    }
-    res.statusCode = 200;
-    return res.send({ data: movies });
-  } catch (e) {
-    console.log(e, "에러");
-    res.statusCode = 500;
-    return res.end();
-  }
-});
-
-main.post("/movies/:movie_id/like", logInChecker, async (req, res) => {
-  const { movie_id } = req.params;
-  console.log(movie_id);
-  const { user_index } = req.user;
-  if (!movie_id) {
-    res.statusCode = 400;
-    return res.end();
-  }
-  if (!user_index) {
-    res.statusCode = 401;
-    return res.end();
-  }
-  try {
-    await Want_watch.create({
-      user_index: user_index,
-      movie_index: movie_id,
-    });
-    res.statusCode = 200;
-    res.send({ message: "좋아요 등록 완료" });
-  } catch (e) {
-    console.error(e);
-    res.statusCode = 500;
-    res.end();
-  }
-});
-
-main.delete("/movies/:movie_id/dislike", logInChecker, async (req, res) => {
-  const { movie_id } = req.params;
-  const { user_index } = req.user;
-  if (!movie_id) {
-    res.statusCode = 400;
-    return res.end();
-  }
-  if (!user_index) {
-    res.statusCode = 401;
-    return res.end();
-  }
-  try {
-    await Want_watch.destroy({
-      where: {
-        user_index: user_index,
-        movie_index: movie_id,
-      },
-    });
-    res.statusCode = 200;
-    return res.send({ message: "좋아요 취소 완료" });
-  } catch (e) {
-    res.statusCode = 500;
-    return res.end();
-  }
-});
-
-main.post("/movies/:movie_id/rating", logInChecker, async (req, res) => {
-  const { movie_id } = req.params;
-  const { user_index } = req.user;
-  const { rating } = req.body;
-
-  if (!movie_id) {
-    res.statusCode = 400;
-    return res.end();
-  }
-  if (!user_index) {
-    res.statusCode = 401;
-    return res.end();
-  }
-  if (!rating) {
-    res.statusCode = 400;
-    return res.end();
-  }
-  try {
-    await Movie_review.create({
-      user_index: user_index,
-      movie_index: movie_id,
-      score: rating,
-    });
-    res.statusCode = 200;
-    return res.send({ message: "평점 수정 완료" });
-  } catch (e) {
-    res.statusCode = 500;
-    return res.end();
-  }
-});
-//이미 있다면? 추가하기 혹은 FindorCreate로 바꾸기, 유저 테이블의 review_num 추가해주기
-
-main.post("/movies/:movie_id/comment", logInChecker, async (req, res) => {
-  const { movie_id } = req.params;
-  const { text } = req.body;
-  const { user_index } = req.user;
-
-  if (!movie_id) {
-    res.statusCode = 400;
-    return res.end();
-  }
-  if (!user_index) {
-    res.statusCode = 401;
-    return res.end();
-  }
-  if (!text) {
-    res.statusCode = 400;
-    return res.end();
-  }
-  try {
-    await Movie_review.create({
-      user_index: user_index,
-      movie_index: movie_id,
-      comment: text,
-    });
-    res.statusCode = 200;
-    return res.send({ message: "평가 등록 완료" });
-  } catch (e) {
-    res.statusCode = 500;
-    return res.end();
-  }
-});
-//이미 있다면? 추가하기, 유저 테이블의 review_num 추가해주기
-
-main.put("/movies/:movie_id/comment", logInChecker, async (req, res) => {
-  const { movie_id } = req.params;
-  const { text } = req.body;
-  const { user_index } = req.user;
-  if (!movie_id) {
-    res.statusCode = 400;
-    return res.end();
-  }
-  if (!user_index) {
-    res.statusCode = 401;
-    return res.end();
-  }
-  if (!text) {
-    res.statusCode = 400;
-    return res.end();
-  }
-  try {
-    const exist = await Movie_review.findOne({
-      where: { user_index: user_index, movie_index: movie_id },
-    });
-    if (!exist) {
-      res.statusCode = 404;
-      return res.end();
-    }
-    await Movie_review.update(
-      {
-        comment: text,
-      },
-      { where: { user_index: user_index, movie_index: movie_id } }
-    );
-    res.statusCode = 200;
-    return res.send({ message: "평가 수정 완료" });
-  } catch (e) {
-    res.statusCode = 500;
-    return res.end();
-  }
-});
-
-main.delete("/movies/:movie_id/comment", logInChecker, async (req, res) => {
-  const { movie_id } = req.params;
-  const { user_index } = req.user;
-  if (!movie_id) {
-    res.statusCode = 400;
-    return res.end();
-  }
-  if (!user_index) {
-    res.statusCode = 401;
-    return res.end();
-  }
-  try {
-    const exist = await Movie_review.findOne({
-      where: { user_index: user_id, movie_index: movie_id },
-    });
-    if (!exist) {
-      res.statusCode = 404;
-      return res.end();
-    }
-    await Movie_review.destroy({
-      where: {
-        user_index: user_index,
-        movie_index: movie_id,
-      },
-    });
-    res.statusCode = 200;
-    return res.end();
-  } catch (e) {
     res.statusCode = 500;
     return res.end();
   }

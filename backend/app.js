@@ -1,16 +1,20 @@
-const express = require('express')
-const morgan = require('morgan')
-require('dotenv').config()
-const swaggerUi = require('swagger-ui-express')
-const swaggerJsdoc = require('swagger-jsdoc')
-const passport = require('passport')
-const cookieParser = require('cookie-parser')
-const { sequelize } = require('./models/index')
-const loginRouter = require('./routes/login_pages')
-const userInfoRouter = require('./routes/user_info_pages')
-const userRankingRouter = require('./routes/user_ranking_pages')
+const express = require("express");
+const cors = require("cors");
+const morgan = require("morgan");
+require("dotenv").config();
+const swaggerUi = require("swagger-ui-express");
+const swaggerJsdoc = require("swagger-jsdoc");
+const passport = require("passport");
+const cookieParser = require("cookie-parser");
+const { sequelize } = require("./models/index");
+const loginRouter = require("./routes/login_pages");
+const userInfoRouter = require("./routes/user_info_pages");
+const userRankingRouter = require("./routes/user_ranking_pages");
 import main from "./api/main";
-const passportConfig = require('./passport/strategies')
+import search from "./api/search";
+import like from "./api/like";
+import review from "./api/review";
+const passportConfig = require("./passport/strategies");
 
 const options = {
   definition: {
@@ -22,7 +26,7 @@ const options = {
     servers: [{ url: "http://localhost:5000" }],
     version: "1.0.0",
   },
-  apis: ["./routes/*.js", "app.js"],
+  apis: ["./routes/*.js", "./api/*.js", "app.js"],
 };
 const openapiSpecification = swaggerJsdoc(options);
 
@@ -38,6 +42,7 @@ sequelize
   });
 
 // 필요한 세팅
+app.use(cors());
 app.use(morgan("dev"));
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openapiSpecification));
 app.use(express.json());
@@ -48,6 +53,9 @@ app.use(passport.initialize());
 // router 연결
 app.use("/user", loginRouter);
 app.use("/", main);
+app.use("/", search);
+app.use("/", like);
+app.use("/", review);
 app.use("/user-info", userInfoRouter);
 app.use("/user-ranking", userRankingRouter);
 
