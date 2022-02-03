@@ -34,7 +34,7 @@ const router = express.Router();
  *              name:
  *                type: string
  *                example: 유저의 닉네임
- *              password1:
+ *              password:
  *                type: string
  *                example: 유저의 비밀번호1
  *              confirmpassword:

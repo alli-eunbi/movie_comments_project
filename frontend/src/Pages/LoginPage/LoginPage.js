@@ -17,7 +17,7 @@ const LoginPage = () => {
   const [loginResult, setLoginResult] = useRecoilState(responseState);
   
   const [id, setId] = useState("");
-  const [password, setPassword] = useState("")
+  const [password, setPassword] = useState("");
 
   const resultValue = useRecoilValue(successSelector); // 다른 파일에 사용 될
 
