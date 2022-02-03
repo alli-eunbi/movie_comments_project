@@ -13,7 +13,7 @@ import { RecoilRoot } from 'recoil';
 
 function App() {
   return (
-    <RecoilRoot>
+    // <RecoilRoot>
       <Router>
         <div className="App">
           <Routes>
@@ -26,7 +26,7 @@ function App() {
           </Routes>
         </div>
       </Router>
-    </RecoilRoot>
+    // </RecoilRoot>
   );
 }
 

@@ -71,7 +71,7 @@ const router = express.Router();
  */
 router.post("/register", isNotLoggedIn, async (req, res, next) => {
   try {
-    const { img, id, name, password1, confirmpassword } = req.body;
+    const { img, id, name, password, confirmpassword } = req.body;
     // 유저 테이블 내부에 id가 중복인지 확인
     const user = await User.findOne({
       where: {
@@ -88,7 +88,7 @@ router.post("/register", isNotLoggedIn, async (req, res, next) => {
     }
 
     // 존재하지 않는 아이디라면 해쉬로 만들어서 저장 후 확인메시지를 보낸다.
-    const hash = await bcrypt.hash(password1, 12);
+    const hash = await bcrypt.hash(password, 12);
     await User.create({
       id,
       name,
