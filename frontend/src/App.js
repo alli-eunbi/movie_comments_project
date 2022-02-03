@@ -9,21 +9,24 @@ import InfoPage from './Pages/InfoPage/InfoPage';
 import MovieInfoPage from './Pages/MovieInfoPage/MovieInfoPage';
 import LoginPage from './Pages/LoginPage/LoginPage';
 import RegisterPage from './Pages/RegisterPage/RegisterPage';
+import { RecoilRoot } from 'recoil';
 
 function App() {
   return (
-    <Router>
-      <div className="App">
-        <Routes>
-            <Route exact path="/" element={<MainPage/>}/>
-            <Route exact path="rank" element={<RankPage/>}/>
-            <Route exact path="info" element={<InfoPage/>}/>
-            <Route exact path="movie/:id" element={<MovieInfoPage/>}/>
-            <Route exact path="login" element={<LoginPage/>}/>
-            <Route exact path="register" element={<RegisterPage/>}/>
-        </Routes>
-      </div>
-    </Router>
+    <RecoilRoot>
+      <Router>
+        <div className="App">
+          <Routes>
+              <Route exact path="/" element={<MainPage/>}/>
+              <Route exact path="rank" element={<RankPage/>}/>
+              <Route exact path="info" element={<InfoPage/>}/>
+              <Route exact path="movie/:id" element={<MovieInfoPage/>}/>
+              <Route exact path="login" element={<LoginPage/>}/>
+              <Route exact path="register" element={<RegisterPage/>}/>
+          </Routes>
+        </div>
+      </Router>
+    </RecoilRoot>
   );
 }
 

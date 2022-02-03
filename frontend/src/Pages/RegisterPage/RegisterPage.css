@@ -27,3 +27,5 @@
 	color: white;
 	cursor: pointer;
 }
+
+@import "~antd/dist/antd.css";

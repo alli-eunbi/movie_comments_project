@@ -2,6 +2,7 @@ import React, {useState, useRef} from 'react'
 import "./RegisterPage.css"
 import axios from 'axios';
 import { Navigate } from "react-router-dom";
+import { Avatar } from "antd";
 
 const RegisterPage = () => {
   
@@ -10,64 +11,61 @@ const RegisterPage = () => {
   
   //input에서 입력한 아이디와 비밀번호 정보를 담기위한 state
   const [account, setAccount] = useState({
+    profile_img:"",
     name: "",
     id: "",
     password: "",
-    confirmpassword: "",
+    confirmpassword: ""
   });
   
   //input에 입력하면 자동적으로 account state값 변경
   const onChangeAccount = (e) => {
+
+    if (e.target.name === 'name') { setName(e.currentTarget.value) }
+    else if (e.target.name === 'id') { setId(e.currentTarget.value) }
+    else if (e.target.name === 'password') { setPassword(e.currentTarget.value) }
+    else if (e.target.name === 'confirmpassword') { setConfirmpassword(e.currentTarget.value) }
+
     setAccount({
       ...account,
       [e.target.name]: e.target.value,
     });
     console.log(account);
-    if (e.target.name === 'name') { setName(e.currentTarget.value) }
-    else if (e.target.name === 'id') { setId(e.currentTarget.value) }
-    else if (e.target.name === 'password') { setPassword(e.currentTarget.value) }
-    else if (e.target.name === 'confirmpassword') { setConfirmpassword(e.currentTarget.value) }
+
   };
 
-
+  const [profile_img, setProfile_img] = useState("");
   const [name, setName] = useState("")
   const [id, setId] = useState("");
   const [password, setPassword] = useState("")
   const [confirmpassword, setConfirmpassword] = useState("")
 
-//   const [imgBase64, setImgBase64] = useState(""); // 파일 base64
-//   const [imgFile, setImgFile] = useState(null);	//파일	
-  
-//   const handleChangeFile = (event) => {
-//     let reader = new FileReader();
+const [Image, setImage] = useState("https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png")
+const fileInput = useRef(null)
+const [file, setFile] = useState(null)
 
-//     reader.onloadend = () => {
-//       // 2. 읽기가 완료되면 아래코드가 실행됩니다.
-//       const base64 = reader.result;
-//       if (base64) {
-//         setImgBase64(base64.toString()); // 파일 base64 상태 업데이트
-//       }
-//     }
-//     if (event.target.files[0]) {
-//       reader.readAsDataURL(event.target.files[0]); // 1. 파일을 읽어 버퍼에 저장합니다.
-//       setImgFile(event.target.files[0]); // 파일 상태 업데이트
-//     }
-//   }
-
-  const [imageSrc, setImageSrc] = useState('');
-
-  const encodeFileToBase64 = (fileBlob) => { 
-
-      const reader = new FileReader(); 
-      
-      reader.readAsDataURL(fileBlob); 
-      return new Promise((resolve) => { 
-          reader.onload = () => { 
-              setImageSrc(reader.result); 
-              resolve(); 
-          }; 
-      }); 
-  };
+const onChange = (e) => {
+if(e.target.files[0]){
+        setFile(e.target.files[0])
+        setAccount({
+            ...account,
+            [e.target.name]: e.target.value
+        });
+        if (e.target.name === 'profile_img') { setProfile_img(e.target.files[0])}
+        console.log(account)
+    }else{ //업로드 취소할 시
+        setImage("https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png")
+        return
+    }
+//화면에 프로필 사진 표시
+    const reader = new FileReader();
+    reader.onload = () => {
+        if(reader.readyState === 2){
+            setImage(reader.result)
+        }
+    }
+    reader.readAsDataURL(e.target.files[0])
+}
 
   const onSubmit = (e) => {
 
@@ -79,7 +77,7 @@ const RegisterPage = () => {
         window.alert('비밀번호와 비밀번호 확인은 같아야 합니다!')
     }
     
-    axios.post("http://localhost:5000/user/register", account)
+    axios.post("/user/register", account)
     .then((response)=> {
         console.log(response)
     })
@@ -93,15 +91,20 @@ const RegisterPage = () => {
     <div className="loginregister">
       <form>
         <div><h2>회원가입</h2></div>
-        <input accept='image/jpg,impge/png,image/jpeg,image/gif' type="file" onChange={(e) => { encodeFileToBase64(e.target.files[0]); }} /> 
-        <div className="preview"> {imageSrc && <img src={imageSrc} alt="preview-img" />} </div>
-        {/* <div style={{"backgroundColor": "#efefef", "width":"150px", "height" : "150px", "margin": "10px"}}></div>
         <div>
-            <label className="input-file-button" for="input-file">
-            업로드
-            </label>
-            <input name="profile_img" type="file" id="input-file" onChange={handleChangeFile} style={{display:"none"}}/>
-        </div> */}
+            <Avatar
+                src={Image}
+                style={{margin:'20px'}}
+                size={200}
+                onClick={()=>{fileInput.current.click()}}/>
+             <input 
+                type='file' 
+                style={{display:'none'}}
+                accept='image/jpg,impge/png,image/jpeg'
+                name='profile_img'
+                onChange={onChange}
+                ref={fileInput}/>
+        </div>
         <div><input name="name" type="text" placeholder="이름" value={name} onChange={onChangeAccount} className="loginregister__input"/></div>
         <div><input name="id" type="id" placeholder="이메일" value={id} onChange={onChangeAccount} className="loginregister__input"/></div>
         <div><input name="password" type="password" placeholder="비밀번호" value={password} onChange={onChangeAccount} className="loginregister__input"/></div>
