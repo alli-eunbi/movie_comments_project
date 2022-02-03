@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { Link } from 'react-router-dom';
+import { Link  } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import { styled, alpha } from '@mui/material/styles';
 import AppBar from '@mui/material/AppBar';
@@ -17,24 +18,15 @@ import InputBase from '@mui/material/InputBase';
 import SearchIcon from '@mui/icons-material/Search';
 
 
-const pages = ['랭킹', '로그인', '회원가입'];
 
 const settings = ['마이페이지'];
 
-const style = {
-    backgroundColor : '#46A6A6'
-}
-
 const NavBar = () => {
-    const [anchorElNav, setAnchorElNav] = React.useState(null);
+
     const [anchorElUser, setAnchorElUser] = React.useState(null);
 
     const handleOpenUserMenu = (event) => {
         setAnchorElUser(event.currentTarget);
-    };
-
-    const handleCloseNavMenu = () => {
-        setAnchorElNav(null);
     };
 
     const handleCloseUserMenu = () => {
@@ -42,32 +34,30 @@ const NavBar = () => {
     };
 
     return (
-        <AppBar position="fixed" className={{style}}>
+        <AppBar position="fixed">
         <Container maxWidth="xl">
             <Toolbar disableGutters>
-            
-            <Typography
-                variant="h6"
-                noWrap
-                component="div"
-                sx={{ mr: 2, display: { xs: 'none', md: 'flex' } }}
-            >
-                LOGO자리
-            </Typography>
-
-            <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-                {pages.map((page) => (
-                <Link to= '/info'>
-                    <Button
-                        key={page}
-                        // onClick={handleCloseNavMenu}
-                        sx={{ my: 2, color: 'white', display: 'block'}}
-                        style={{ textDecoration: 'none' }}
-                    >
-                        {page}
+                <Link to= '/'>
+                    <Button sx={{ my: 2, color: 'white', display: 'block', fontSize: 20}}>
+                        홈
                     </Button>
                 </Link>
-                ))}
+            <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+                <Link to= '/rank'>
+                    <Button sx={{ my: 2, color: 'white', display: 'block'}}>
+                        랭크
+                    </Button>
+                </Link>
+                <Link to= '/login'>
+                    <Button sx={{ my: 2, color: 'white', display: 'block'}}>
+                        로그인
+                    </Button>
+                </Link>
+                <Link to= '/register'>
+                    <Button sx={{ my: 2, color: 'white', display: 'block'}}>
+                        회원가입
+                    </Button>
+                </Link>
             </Box>
 
             <Box sx={{ flexGrow: 100, display: { xs: 'none', md: 'flex' } }}>
