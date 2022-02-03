@@ -4,9 +4,9 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node app",
-    "dev": "nodemon app --exec babel-node"
+    "dev": "nodemon app --exec babel-node",
+    "test": "jest"
   },
   "author": "",
   "license": "ISC",
@@ -33,6 +33,8 @@
     "@babel/polyfill": "^7.12.1",
     "@babel/preset-env": "^7.16.11",
     "babel-loader": "^8.2.3",
+    "babel-polyfill": "^6.26.0",
+    "jest": "^27.4.7",
     "nodemon": "^2.0.15",
     "swagger-jsdoc": "^6.1.0",
     "swagger-ui-express": "^4.3.0"
