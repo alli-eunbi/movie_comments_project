@@ -20,7 +20,7 @@ function App() {
               <Route exact path="/" element={<MainPage/>}/>
               <Route exact path="rank" element={<RankPage/>}/>
               <Route exact path="info" element={<InfoPage/>}/>
-              <Route exact path="movie/:id" element={<MovieInfoPage/>}/>
+              <Route exact path="movies/:movie_id" element={<MovieInfoPage/>}/>
               <Route exact path="login" element={<LoginPage/>}/>
               <Route exact path="register" element={<RegisterPage/>}/>
           </Routes>
