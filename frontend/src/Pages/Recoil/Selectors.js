@@ -1,16 +1,20 @@
-// import { selector } from 'recoil';
-// import {responseState} from '../../Pages/Recoil/Atoms';
+import { selector } from 'recoil';
+import { loginState, logoutState } from '../../Pages/Recoil/Atoms';
 
-// export const successSelector = selector({
-//   key: 'success',
+export const logSelector = selector({
+  key: 'loginselector',
 
-//   get: ({ get }) => {
-//     const result = get(responseState);
-//       if (result === true) {
-//         return true;
-//       }
-//       else {
-//         return false;
-//       }
-//   },
-// });
+  get: ({ get }) => {
+
+    const loginResult = get(loginState);
+    const logoutResult = get(logoutState);
+
+      if (loginResult === true && logoutResult === false) {
+        return `로그아웃`;
+      } else if (loginResult === false && logoutResult === true) {
+        return `로그인`;
+      } else {
+        return `로그인`;
+      }
+  }
+});

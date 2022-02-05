@@ -3,7 +3,8 @@ import "./LoginPage.css"
 import axios from 'axios';
 import { useRecoilState, useRecoilValue } from "recoil";
 import { useNavigate } from "react-router-dom";
-import { userState, loginState } from "../../Pages/Recoil/Atoms";
+import { userState, loginState, logoutState } from "../../Pages/Recoil/Atoms";
+
 
 
 const LoginPage = () => {
@@ -14,7 +15,8 @@ const LoginPage = () => {
   //input에서 입력한 아이디와 비밀번호 정보를 담기위한 state
   const [account, setAccount] = useRecoilState(userState);
   const [loginResult, setLoginResult] = useRecoilState(loginState);
-  const userinfo = useRecoilValue(userState);
+  const [logoutResult, setLogoutResult] = useRecoilState(logoutState);
+
 
   const [id, setId] = useState("");
   const [password, setPassword] = useState("");
@@ -30,12 +32,8 @@ const LoginPage = () => {
       ...account,
       [e.target.name]: e.target.value,
     }));
-
     
-    //const userInfo = useSetRecoilValue()
-
     console.log(account);
-    console.log(userinfo);
   };
 
 
@@ -45,7 +43,6 @@ const LoginPage = () => {
     e.preventDefault();
 
     console.log(account)
-    console.log(userinfo)
     
     axios.post("http://localhost:5000/user/login/local", account)
     .then((response)=> {
@@ -55,6 +52,7 @@ const LoginPage = () => {
       console.log(result[0]);
       if (result[0] === true) {
         setLoginResult(result[0]);
+        setLogoutResult(!result[0]);
         navigate('/');
       }
     })

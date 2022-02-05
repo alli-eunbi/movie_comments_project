@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Link  } from 'react-router-dom';
 import axios from 'axios';
+import { useNavigate } from "react-router-dom";
 
 import { styled, alpha } from '@mui/material/styles';
 import AppBar from '@mui/material/AppBar';
@@ -17,13 +18,15 @@ import MenuItem from '@mui/material/MenuItem';
 import InputBase from '@mui/material/InputBase';
 import SearchIcon from '@mui/icons-material/Search';
 import { loginState, logoutState } from "../../Pages/Recoil/Atoms";
-import { useRecoilState } from "recoil";
-
+import { logSelector } from "../../Pages/Recoil/Selectors";
+import { useRecoilState, useRecoilValue } from "recoil";
 
 
 const settings = ['마이페이지'];
 
 const NavBar = () => {
+
+    const navigate = useNavigate();
 
     const [anchorElUser, setAnchorElUser] = React.useState(null);
 
@@ -38,64 +41,44 @@ const NavBar = () => {
     const [logoutValue, setLogoutValue] = useRecoilState(logoutState);
     const [loginValue, setLoginValue] = useRecoilState(loginState);
 
+    const userLogged = useRecoilValue(logSelector);
 
-    const logOutHandler = () => {
-        axios.get('/user/logout')
-        .then(response => {
-            let success = Object.values(response);
-            let result = Object.values(success[0]);
-            if (result[0] === true) {
-                setLogoutValue(result[0]);
-                setLoginValue(!result[0]);
-                return (
-                    <div>
-                      <Link to= '/login'>
-                        <Button sx={{ my: 2, color: 'white', display: 'block'}}>
-                            로그인
-                        </Button>
-                      </Link>
-                    </div>
-                  )
-            } else {
-                alert('로그아웃에 실패');
-            }
+    // const logOutHandler = () => {
+    //     axios.get('/user/logout')
+    //     .then(response => {
+    //         let success = Object.values(response);
+    //         let result = Object.values(success[0]);
+    //         if (result[0] === true) {
+    //             setLogoutValue(result[0]);
+    //             setLoginValue(!result[0]);
+    //         } else {
+    //             alert('로그아웃에 실패');
+    //         }
             
-        })
-    }
+    //     })
+    // }
 
-    const LogInChecker = (loginValue, logoutValue) => {
-      useEffect(() => {
+    const LogInChecker = () => {
         console.log(loginValue, logoutValue)
-        if (loginValue === true && logoutValue === false) {
-            return(
-                <div>
-                    <Button onClick={logOutHandler}>
-                        로그아웃
-                    </Button>
-                </div>
-              )
-        } else if (logoutValue === true && loginValue === false) {
-            return (
-                <div>
-                  <Link to= '/login'>
-                    <Button sx={{ my: 2, color: 'white', display: 'block'}}>
-                        로그인
-                    </Button>
-                  </Link>
-                </div>
-              )
+        if(loginValue === true && logoutValue === false) {              // login 상태
+            axios.get('/user/logout')
+            .then(response => {
+                let success = Object.values(response);
+                let result = Object.values(success[0]);
+                if (result[0] === true) {
+                    setLogoutValue(result[0]);
+                    setLoginValue(!result[0]);
+                    navigate('/');
+                } else {
+                    alert('로그아웃에 실패');
+                }
+                
+            })
+        } else if(loginValue === false && logoutValue === true) {       // logout 상태
+            navigate('/login');
         } else {
-          return(
-            <div>
-              <Link to= '/login'>
-                <Button sx={{ my: 2, color: 'white', display: 'block'}}>
-                    로그인
-                </Button>
-              </Link>
-            </div>
-          )
+            navigate('/login');
         }
-      })
     }
     
 
@@ -115,7 +98,7 @@ const NavBar = () => {
                     </Button>
                 </Link>
                 <Button sx={{ my: 2, color: 'white', display: 'block'}} onClick={LogInChecker}>
-                    로그인
+                    {userLogged}
                 </Button>
                 <Link to= '/register'>
                     <Button sx={{ my: 2, color: 'white', display: 'block'}}>
