@@ -12,7 +12,6 @@ function MovieInfoPage(props) {
     const [ fetchMovieInfo, setFetchMovieInfo ] = useState([])
     const movieId = useParams().movie_id;
     
-
     useEffect(()=> {
         const fetchData = async() => {
           const result = await axios.get(`http://localhost:5000/movies/${movieId}`)
@@ -20,8 +19,8 @@ function MovieInfoPage(props) {
         };
         fetchData();
       }, []);
-
-    return (
+      console.log(fetchMovieInfo)
+    return (   
         <div>
             <NavBar/>
             <Inner>

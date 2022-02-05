@@ -15,7 +15,7 @@ function MovieListPage() {
         };
         fetchData();
       }, []);
-
+      
     return(
         <>
         Movie List

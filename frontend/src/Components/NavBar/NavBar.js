@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { Link  } from 'react-router-dom';
-import { useNavigate } from 'react-router';
+import { Link ,useNavigate  } from 'react-router-dom';
+import { useState } from 'react';
 
 import { styled, alpha } from '@mui/material/styles';
 import AppBar from '@mui/material/AppBar';
@@ -17,21 +17,26 @@ import MenuItem from '@mui/material/MenuItem';
 import InputBase from '@mui/material/InputBase';
 import SearchIcon from '@mui/icons-material/Search';
 
-
-
 const settings = ['마이페이지'];
 
-const NavBar = () => {
+const NavBar = (props) => {
 
-    const [anchorElUser, setAnchorElUser] = React.useState(null);
+    const [SearchTerms, setSearchTerms] = useState("")
+    const [MovieKeyword, setMovieKeyword] = useState("")
+    
+    const searchHandler = (event) => {
+        setSearchTerms(event.currentTarget.value)
+        props.refreshFunction(event.currentTarget.value)
+    }
 
-    const handleOpenUserMenu = (event) => {
-        setAnchorElUser(event.currentTarget);
-    };
+    let navigate = useNavigate();
 
-    const handleCloseUserMenu = () => {
-        setAnchorElUser(null);
-    };
+    const enterKey = () => {
+        if (window.event.keyCode == 13) {
+            return navigate(`movies/search?keyword=${SearchTerms}`);
+        }
+    }
+
 
     return (
         <AppBar position="fixed">
@@ -66,36 +71,26 @@ const NavBar = () => {
                     <SearchIcon />
                     </SearchIconWrapper>
                     <StyledInputBase
-                    placeholder="영화검색"
-                    inputProps={{ 'aria-label': 'search' }}
+                        value={SearchTerms}
+                        onChange={searchHandler}
+                        onKeyUp={enterKey}
+                        placeholder="영화검색"
                     />
                 </Search>
             </Box>
 
             <Box sx={{ flexGrow: 0 }}>
                 <Tooltip title="Open settings">
-                <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
+                <IconButton sx={{ p: 0 }}>
                     <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
                 </IconButton>
                 </Tooltip>
                 <Menu
                 sx={{ mt: '45px' }}
                 id="menu-appbar"
-                anchorEl={anchorElUser}
-                anchorOrigin={{
-                    vertical: 'top',
-                    horizontal: 'right',
-                }}
-                keepMounted
-                transformOrigin={{
-                    vertical: 'top',
-                    horizontal: 'right',
-                }}
-                open={Boolean(anchorElUser)}
-                onClose={handleCloseUserMenu}
                 >
                 {settings.map((setting) => (
-                    <MenuItem key={setting} onClick={handleCloseUserMenu}>
+                    <MenuItem key={setting}>
                     <Typography textAlign="center">{setting}</Typography>
                     </MenuItem>
                 ))}

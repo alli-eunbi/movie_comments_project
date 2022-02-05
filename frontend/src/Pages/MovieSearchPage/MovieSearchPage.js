@@ -1,18 +1,56 @@
-import React from 'react';
+import React, { useState , useEffect } from 'react';
 import styled from 'styled-components';
 import NavBar from '../../Components/NavBar/NavBar';
+import axios from 'axios';
+import SearchMovies from '../../Components/SearchMovies/SearchMovies';
+import { useLocation } from 'react-router';
+import queryString from 'query-string';
+
 
 function MovieSearchPage() {
-  return (
-    <>
-        <NavBar/>
-        <Inner>
-            <Box>
-                MovieSearchPage
-            </Box>
-        </Inner>
-    </>
-    );
+
+    const [SearchTerm, setSearchTerm] = useState("")
+    const [SearchMovieResult, setSearchMovieResult] = useState()
+    const { search } = useLocation();
+    const { keyword } = queryString.parse(search);
+    
+
+    useEffect(() => {
+        const fetchData = async() => {
+            const result = await axios.get(`http://localhost:5000/movies/search`, {
+                params: {
+                    keyword: `${keyword}`
+                }
+            });
+            setSearchMovieResult(result.data.data)
+            console.log(SearchMovieResult) 
+        }
+        fetchData();
+    },[])
+
+    const updateSearchTerm = (newSearchTerm) => {
+        setSearchTerm(newSearchTerm)
+    }
+    return (
+        <>
+            <NavBar
+                refreshFunction={updateSearchTerm}
+            />
+            <Inner>
+                <Box>                    
+                    MovieSearchPage
+                    <Container>
+                        {SearchMovieResult && SearchMovieResult.map(movie =>(
+                            <SearchMovies
+                            key={movie.index}
+                            image={movie.poster_url}
+                        />   
+                        ))}
+                    </Container>
+                </Box>
+            </Inner>
+        </>
+        );
 }
 
 export default MovieSearchPage;
@@ -39,4 +77,13 @@ const Box = styled.div`
     flex-wrap: wrap;
     flex-direction: column;
     padding: 25px;
+`;
+
+const Container = styled.div`
+  display: grid;
+  padding-top: 50px;
+  grid-template-columns: repeat(4, 1fr);
+  justify-items: center;
+  align-items: center;
+  gap: 10px;
 `;
