@@ -1,8 +1,9 @@
-const { isLoggedIn } = require('./middleware')
+const { isLoggedIn, isNotLoggedIn, logInChecker, updateTemperature } = require('./middleware')
 jest.mock('jsonwebtoken')
 const jwt = require('jsonwebtoken')
 import 'babel-polyfill'
 
+// isLoggedIn 미들웨어 테스트
 describe('isLoggedIn', () => {
   // mock functions를 만들어야한다.
   const res = {
@@ -60,4 +61,95 @@ describe('isLoggedIn', () => {
     expect(res.status).toBeCalledWith(419)
     expect(next).toBeCalledTimes(1)
   })
+})
+
+// isNotLoggedIn 테스트
+describe('isNotLoggedIn', () => {
+  const res = {
+    status: jest.fn(() => res),
+    json: jest.fn()
+  }
+  const next = jest.fn()
+
+  test('로그인이 된 상태라면 유효하지 않은 접근 에러를 응답한다.', () => {
+    const req = {
+      cookies: {
+        accessToken: 'accessToken'
+      }
+    }
+
+    isNotLoggedIn(req, res, next)
+    expect(res.status).toBeCalledWith(400)
+    expect(res.json).toBeCalledWith({success: false, message: "유효하지 않은 접근입니다."})
+  })
+
+  test('로그인한 기록이 없어서 토큰이 없는 경우', () => {
+    const req = {
+      cookies: {
+        accessToken: null
+      }
+    }
+
+    jwt.verify.mockImplementation((token, secret_key) => {
+      throw error
+    })
+
+    isNotLoggedIn(req, res, next)
+    expect(next).toBeCalledTimes(1)
+  })
+
+  test('유효하지 않은 토큰인 경우', () => {
+    const req = {
+      cookies: {
+        accessToken: 'token'
+      }
+    }
+
+    jwt.verify.mockImplementation((token, scret_key) => {
+      throw error
+    })
+
+    isNotLoggedIn(req, res, next)
+    expect(res.status).toBeCalledWith(400)
+    expect(res.json).toBeCalledWith({success: false, message: "유효하지 않은 접근입니다."})
+  })
+})
+
+// logInChecker 미들웨어 테스트
+describe('logInChecker', () => {
+  const res = {}
+  
+  test('로그인이 된 상태라면 req.user에 로그인 정보를 넣고 next호출', () => {
+    const next = jest.fn()
+    const req = {
+      cookies: {
+        accessToken: 'token'
+      },
+    }
+
+    const mockFn = jwt.verify.mockImplementation(() => {
+      return {user_index: '1', user_id: 'test1'}
+    })
+    
+    const decoded = mockFn()
+
+    logInChecker(req, res, next)
+    expect(req.user).toStrictEqual(decoded)
+    expect(next).toBeCalledTimes(1)
+  })
+
+  test('로그인 되지 않았다면 next를 호출', () => {
+    const req = {}
+    const next = jest.fn()
+    jwt.verify.mockImplementation(() => {throw error})
+
+    logInChecker(req, res, next)
+    expect(req.user).toBeUndefined()
+    expect(next).toBeCalledTimes(1)
+  })
+})
+
+// 온도를 업데이트하는 updateTemperature 함수 테스트
+describe('updateTemperature', () => {
+  
 })
