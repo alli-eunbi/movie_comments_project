@@ -1,14 +1,14 @@
 import React, {useState, useRef} from 'react'
 import "./RegisterPage.css"
 import axios from 'axios';
-import { Navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Avatar } from "antd";
 
 const RegisterPage = () => {
   
   //url 이동을 위한 useHistory
-  //const history = Navigate();
-  
+  const navigate = useNavigate();
+
   //input에서 입력한 아이디와 비밀번호 정보를 담기위한 state
   const [account, setAccount] = useState({
     profile_img:"",
@@ -70,7 +70,6 @@ if(e.target.files[0]){
   const onSubmit = (e) => {
 
     e.preventDefault();
-
     console.log(account)
 
     if (password !== confirmpassword) {
@@ -80,6 +79,12 @@ if(e.target.files[0]){
     axios.post("http://localhost:5000/user/register", account)
     .then((response)=> {
         console.log(response)
+        let success = Object.values(response);
+        let result = Object.values(success[0]);
+        if (result[0] === true) {
+          console.log(result[0]);
+          navigate('/');
+        }
     })
     .catch((error)=> {
         console.log(error)
@@ -106,7 +111,7 @@ if(e.target.files[0]){
                 ref={fileInput}/>
         </div>
         <div><input name="name" type="text" placeholder="이름" value={name} onChange={onChangeAccount} className="loginregister__input"/></div>
-        <div><input name="id" type="id" placeholder="이메일" value={id} onChange={onChangeAccount} className="loginregister__input"/></div>
+        <div><input name="id" type="id" placeholder="아이디" value={id} onChange={onChangeAccount} className="loginregister__input"/></div>
         <div><input name="password" type="password" placeholder="비밀번호" value={password} onChange={onChangeAccount} className="loginregister__input"/></div>
         <div><input name="confirmpassword" type="password" placeholder="비밀번호 확인" value={confirmpassword} onChange={onChangeAccount} className="loginregister__input"/></div>
         <div><button type="submit" onClick={onSubmit} className="loginregister__button">계정 생성하기</button></div>
