@@ -37,8 +37,6 @@ const NavBar = (props) => {
 
     const [anchorElUser, setAnchorElUser] = React.useState(null);
 
-    let navigate = useNavigate();
-
     const enterKey = () => {
         if (window.event.keyCode == 13) {
             return navigate(`movies/search?keyword=${SearchTerms}`);
