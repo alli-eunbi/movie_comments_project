@@ -14,7 +14,6 @@ function MovieSearchPage() {
     const { search } = useLocation();
     const { keyword } = queryString.parse(search);
     
-
     useEffect(() => {
         const fetchData = async() => {
             const result = await axios.get(`http://localhost:5000/movies/search`, {
