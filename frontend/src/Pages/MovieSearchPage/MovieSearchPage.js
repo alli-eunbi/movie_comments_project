@@ -82,7 +82,7 @@ const Box = styled.div`
 const Container = styled.div`
   display: grid;
   padding-top: 50px;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   justify-items: center;
   align-items: center;
   gap: 10px;

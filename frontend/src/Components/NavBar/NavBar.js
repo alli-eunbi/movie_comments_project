@@ -1,6 +1,7 @@
-import * as React from 'react';
-import { Link ,useNavigate  } from 'react-router-dom';
-import { useState } from 'react';
+
+import React, { useState } from 'react';
+import axios from 'axios';
+import { useNavigate, Link } from "react-router-dom";
 
 import { styled, alpha } from '@mui/material/styles';
 import AppBar from '@mui/material/AppBar';
@@ -16,6 +17,10 @@ import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import InputBase from '@mui/material/InputBase';
 import SearchIcon from '@mui/icons-material/Search';
+import { loginState, logoutState } from "../../Pages/Recoil/Atoms";
+import { logSelector } from "../../Pages/Recoil/Selectors";
+import { useRecoilState, useRecoilValue } from "recoil";
+
 
 const settings = ['마이페이지'];
 
@@ -28,6 +33,9 @@ const NavBar = (props) => {
         setSearchTerms(event.currentTarget.value)
         props.refreshFunction(event.currentTarget.value)
     }
+    const navigate = useNavigate();
+
+    const [anchorElUser, setAnchorElUser] = React.useState(null);
 
     let navigate = useNavigate();
 
@@ -37,6 +45,50 @@ const NavBar = (props) => {
         }
     }
 
+
+    const [logoutValue, setLogoutValue] = useRecoilState(logoutState);
+    const [loginValue, setLoginValue] = useRecoilState(loginState);
+
+    const userLogged = useRecoilValue(logSelector);
+
+    // const logOutHandler = () => {
+    //     axios.get('/user/logout')
+    //     .then(response => {
+    //         let success = Object.values(response);
+    //         let result = Object.values(success[0]);
+    //         if (result[0] === true) {
+    //             setLogoutValue(result[0]);
+    //             setLoginValue(!result[0]);
+    //         } else {
+    //             alert('로그아웃에 실패');
+    //         }
+            
+    //     })
+    // }
+
+    const LogInChecker = () => {
+        console.log(loginValue, logoutValue)
+        if(loginValue === true && logoutValue === false) {              // login 상태
+            axios.get('/user/logout')
+            .then(response => {
+                let success = Object.values(response);
+                let result = Object.values(success[0]);
+                if (result[0] === true) {
+                    setLogoutValue(result[0]);
+                    setLoginValue(!result[0]);
+                    navigate('/');
+                } else {
+                    alert('로그아웃에 실패');
+                }
+                
+            })
+        } else if(loginValue === false && logoutValue === true) {       // logout 상태
+            navigate('/login');
+        } else {
+            navigate('/login');
+        }
+    }
+    
 
     return (
         <AppBar position="fixed">
@@ -53,11 +105,9 @@ const NavBar = (props) => {
                         랭크
                     </Button>
                 </Link>
-                <Link to= '/login'>
-                    <Button sx={{ my: 2, color: 'white', display: 'block'}}>
-                        로그인
-                    </Button>
-                </Link>
+                <Button sx={{ my: 2, color: 'white', display: 'block'}} onClick={LogInChecker}>
+                    {userLogged}
+                </Button>
                 <Link to= '/register'>
                     <Button sx={{ my: 2, color: 'white', display: 'block'}}>
                         회원가입
