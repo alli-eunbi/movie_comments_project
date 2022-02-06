@@ -18,7 +18,7 @@ function MovieListPage() {
       
     return(
         <>
-        Movie List
+        아래 영화를 <PointText>평가</PointText>해 주세요.
         <Container>
             {fetchMovie && fetchMovie.map(movie => (
                 <React.Fragment key={movie.index}>
@@ -44,27 +44,7 @@ const Container = styled.div`
   gap: 10px;
 `;
 
-// const Inner = styled.div`
-//   height: 100vh;
-//   display: flex;
-//   background-color: #1c2126;
-//   justify-content: center;
-//   align-items: center;
-//   font-size: 100px;
-//   font-family: "Noto Sans KR", sans-serif;
-// `;
-
-// const Box = styled.div`
-//     width: 90%;
-//     height: 80%;
-//     padding-top: 100px;
-//     border-radius: 12px;
-//     background-color: #EEEEEE;
-//     box-shadow: rgba(0, 0, 0, 0.8) 0px 5px 15px;
-//     text-align: center;
-//     font-size: 50px;
-//     flex-wrap: wrap;
-//     flex-direction: column;
-//     padding: 25px;
-// `;
-
+const PointText = styled.span`
+  color: #46a6a6;
+  text-shadow: 2px 2px 2px gray;
+`;

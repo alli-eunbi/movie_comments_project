@@ -204,6 +204,7 @@ router.post("/login/local", isNotLoggedIn, (req, res, next) => {
     res.cookie("accessToken", token, {
       expires: new Date(Date.now() + 24 * 3600000), // 1일 뒤에 사라짐
       httpOnly: true,
+      sameSite: "None"
     });
 
     return res.json({ success: true, message: "로그인 완료" });

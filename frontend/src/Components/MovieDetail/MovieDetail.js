@@ -4,6 +4,7 @@ import Favorite from '../Favorite/Favorite';
 
 function MovieDetail(props) {
   
+
   let { movie } = props ;
   console.log(props)
 

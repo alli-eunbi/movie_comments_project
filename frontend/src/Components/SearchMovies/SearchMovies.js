@@ -1,11 +1,25 @@
 import React from 'react';
 import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
 
-function SearchMovies({image}) {
+function SearchMovies({image, movieId}) {
+    
+    let navigate = useNavigate();
+    
+    function handleClick() {
+        navigate(`/movies/${movieId}`);
+    }
+
     return ( 
         <>
         <Box>
-            <MovieImg src={image} />
+            {image ? 
+                    <MovieImg
+                        src={image} 
+                        alt='영화 포스터'
+                        onClick={handleClick}
+                    />
+            : <h5>포스터가 없습니다 :( </h5>}
         </Box>
         </>
   )

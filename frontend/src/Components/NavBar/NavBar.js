@@ -39,7 +39,7 @@ const NavBar = (props) => {
 
     const enterKey = () => {
         if (window.event.keyCode == 13) {
-            return navigate(`movies/search?keyword=${SearchTerms}`);
+            navigate(`/movies/search?keyword=${SearchTerms}`);
         }
     }
 
