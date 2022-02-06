@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node app",
     "dev": "nodemon app --exec babel-node",
-    "test": "jest"
+    "test": "jest",
+    "coverage": "jest --coverage"
   },
   "author": "",
   "license": "ISC",
