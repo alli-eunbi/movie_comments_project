@@ -67,7 +67,7 @@ const NavBar = (props) => {
     const LogInChecker = () => {
         console.log(loginValue, logoutValue)
         if(loginValue === true && logoutValue === false) {              // login 상태
-            axios.get('/user/logout')
+            axios.get('http://localhost:5000/user/logout', {withCredentials: true})
             .then(response => {
                 let success = Object.values(response);
                 let result = Object.values(success[0]);
