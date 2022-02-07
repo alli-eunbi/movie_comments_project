@@ -44,7 +44,7 @@ const NavBar = (props) => {
     }
 
 
-    const [logoutValue, setLogoutValue] = useRecoilState(logoutState);
+    // const [logoutValue, setLogoutValue] = useRecoilState(logoutState);
     const [loginValue, setLoginValue] = useRecoilState(loginState);
 
     const userLogged = useRecoilValue(logSelector);
@@ -66,15 +66,15 @@ const NavBar = (props) => {
     // }
 
     const LogInChecker = () => {
-        console.log(loginValue, logoutValue)
-        if(loginValue === true && logoutValue === false) {              // login 상태
+        console.log(loginValue)
+        if(loginValue === true) {              // login 상태
             axios.get('http://localhost:5000/user/logout', {withCredentials: true})
             .then(response => {
                 let success = Object.values(response);
                 let result = Object.values(success[0]);
                 if (result[0] === true) {
-                    setLogoutValue(result[0]);
-                    setLoginValue(!result[0]);
+                    // setLogoutValue(result[0]);
+                    setLoginValue(result[0]);
                     // localStorage.setItem("logState", logoutValue);
                     navigate('/');
                 } else {
@@ -82,7 +82,7 @@ const NavBar = (props) => {
                 }
                 
             })
-        } else if(loginValue === false && logoutValue === true) {       // logout 상태
+        } else if(loginValue === false) {       // logout 상태
             navigate('/login');
         } else {
             navigate('/login');
