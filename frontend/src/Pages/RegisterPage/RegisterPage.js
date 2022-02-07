@@ -76,7 +76,7 @@ if(e.target.files[0]){
         window.alert('비밀번호와 비밀번호 확인은 같아야 합니다!')
     }
     
-    axios.post("http://localhost:5000/user/register", account)
+    axios.post("http://localhost:5000/user/register", account, {withCredentials: true})
     .then((response)=> {
         console.log(response)
         let success = Object.values(response);

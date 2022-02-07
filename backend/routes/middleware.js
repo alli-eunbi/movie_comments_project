@@ -33,16 +33,15 @@ exports.isNotLoggedIn = (req, res, next) => {
       req.cookies.accessToken,
       process.env.JWT_SECRET_KEY
     );
-
     // 에러가 발생하지 않는다면 로그인 된 상태이기 때문에 유효하지 않은 접근 에러
     return res
-      .status(204).json({ success: false, message: "유효하지 않은 접근입니다." });
+      .status(206).json({ success: false, message: "유효하지 않은 접근입니다." });
   } catch (err) {
     // 토큰이 없는 경우
     if (!req.cookies.accessToken) return next();
     // 유효하지 않은 토큰인 경우
     return res
-      .status(204)
+      .status(206)
       .json({ success: false, message: "유효하지 않은 접근입니다." });
   }
 };
