@@ -238,7 +238,7 @@ router.post("/login/local", isNotLoggedIn, (req, res, next) => {
  *                message:
  *                  type: string
  *                  example: 로그아웃 성공
- *      301:
+ *      201:
  *        description: 토큰이 잘못된 경우
  *        content:
  *          application/json:
@@ -251,7 +251,7 @@ router.post("/login/local", isNotLoggedIn, (req, res, next) => {
  *                message:
  *                  type: string
  *                  example: 유효하지 않은 토큰입니다.
- *      302:
+ *      202:
  *        description: 토큰이 만료된 경우 기본은 1일이 지나야 만료됨
  *        content:
  *          application/json:
@@ -291,7 +291,7 @@ router.get("/logout", isLoggedIn, (req, res, next) => {
  *              message:
  *                type: string
  *                example: 로그인 완료
- *      300:
+ *      204:
  *        description: 로그인이 되어있는 상태에서 시도하는 경우
  *        content:
  *          application/json:
@@ -368,7 +368,7 @@ router.get("/callback/kakao", (req, res, next) => {
  *                id:
  *                  type: string
  *                  example: 유저 아이디
- *      301:
+ *      201:
  *        description: 토큰이 잘못된 경우
  *        content:
  *          application/json:
@@ -381,7 +381,7 @@ router.get("/callback/kakao", (req, res, next) => {
  *                message:
  *                  type: string
  *                  example: 유효하지 않은 토큰입니다.
- *      302:
+ *      202:
  *        description: 토큰이 만료된 경우 기본은 1일이 지나야 만료됨
  *        content:
  *          application/json:
@@ -431,7 +431,7 @@ router.get("/test1", isLoggedIn, (req, res, next) => {
  *                id:
  *                  type: string
  *                  example: 유저 아이디
- *      300:
+ *      204:
  *        description: 로그인이 된 상태로 접근하는 경우
  *        content:
  *          application/json:

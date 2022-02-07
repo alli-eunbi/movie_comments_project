@@ -47,6 +47,7 @@ const LoginPage = () => {
     
     axios.post("http://localhost:5000/user/login/local", account, {withCredentials: true})
     .then((response)=> {
+      console.log('response')
       console.log(response)
       let success = Object.values(response);
       let result = Object.values(success[0]);
