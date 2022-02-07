@@ -83,6 +83,7 @@ if(e.target.files[0]){
         let result = Object.values(success[0]);
         if (result[0] === true) {
           console.log(result[0]);
+          alert('회원가입이 완료되었습니다!');
           navigate('/');
         }
     })

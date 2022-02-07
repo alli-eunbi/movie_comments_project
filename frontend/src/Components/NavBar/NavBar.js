@@ -75,7 +75,7 @@ const NavBar = (props) => {
                 if (result[0] === true) {
                     setLogoutValue(result[0]);
                     setLoginValue(!result[0]);
-                    localStorage.setItem("logState", logoutValue);
+                    // localStorage.setItem("logState", logoutValue);
                     navigate('/');
                 } else {
                     alert('로그아웃에 실패');
