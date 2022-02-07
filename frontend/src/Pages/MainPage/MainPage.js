@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import styled from 'styled-components';
 import Fade from 'react-reveal/Fade' // https://www.react-reveal.com/ 
 import NavBar from "../../Components/NavBar/NavBar";
-import MovieListPage from "./MovieListPage";
+import MovieListPage from "./MovieListPAge";
 
 function MainPage() {
   const DIVIDER_HEIGHT = 5;

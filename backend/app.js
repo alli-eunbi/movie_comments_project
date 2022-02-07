@@ -42,7 +42,10 @@ sequelize
   });
 
 // 필요한 세팅
-app.use(cors());
+app.use(cors({
+  origin: true,
+  credentials: true
+}));
 app.use(morgan("dev"));
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openapiSpecification));
 app.use(express.json());
@@ -118,6 +121,7 @@ app.use((req, res, next) => {
 
 // 에러처리 미들웨어
 app.use((err, req, res, next) => {
+  console.log(err.stack)
   res.status(err.status || 500);
   res.json(err.stack);
 });
