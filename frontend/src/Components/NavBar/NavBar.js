@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from "react-router-dom";
@@ -39,7 +38,7 @@ const NavBar = (props) => {
 
     const enterKey = () => {
         if (window.event.keyCode == 13) {
-            return navigate(`movies/search?keyword=${SearchTerms}`);
+            navigate(`/movies/search?keyword=${SearchTerms}`);
         }
     }
 

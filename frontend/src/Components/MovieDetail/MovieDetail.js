@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import Favorite from '../Favorite/Favorite';
+import Star from '../Star/Star';
 
 function MovieDetail(props) {
   
   let { movie } = props ;
-  console.log(props)
 
   return (
     <>
@@ -16,6 +16,7 @@ function MovieDetail(props) {
         <SubTitle>줄거리</SubTitle>
         <Text>{movie.plot}</Text>
         <Favorite/>
+        <Star/>
       </Box>
     </>
   )
