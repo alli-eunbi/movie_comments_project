@@ -38,7 +38,7 @@ const NavBar = (props) => {
     const [anchorElUser, setAnchorElUser] = React.useState(null);
 
     const enterKey = () => {
-        if (window.event.keyCode == 13) {
+        if (window.event.keyCode === 13) {
             return navigate(`movies/search?keyword=${SearchTerms}`);
         }
     }
@@ -48,7 +48,8 @@ const NavBar = (props) => {
     const [loginValue, setLoginValue] = useRecoilState(loginState);
 
     const userLogged = useRecoilValue(logSelector);
-
+    // const token = localStorage.getItem('logState');
+    
     // const logOutHandler = () => {
     //     axios.get('/user/logout')
     //     .then(response => {
@@ -67,13 +68,14 @@ const NavBar = (props) => {
     const LogInChecker = () => {
         console.log(loginValue, logoutValue)
         if(loginValue === true && logoutValue === false) {              // login 상태
-            axios.get('/user/logout')
+            axios.get('http://localhost:5000/user/logout')
             .then(response => {
                 let success = Object.values(response);
                 let result = Object.values(success[0]);
                 if (result[0] === true) {
                     setLogoutValue(result[0]);
                     setLoginValue(!result[0]);
+                    localStorage.setItem("logState", logoutValue);
                     navigate('/');
                 } else {
                     alert('로그아웃에 실패');

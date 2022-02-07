@@ -9,6 +9,8 @@ export const logSelector = selector({
     const loginResult = get(loginState);
     const logoutResult = get(logoutState);
 
+    const token = localStorage.getItem('logState');
+
       if (loginResult === true && logoutResult === false) {
         return `로그아웃`;
       } else if (loginResult === false && logoutResult === true) {
