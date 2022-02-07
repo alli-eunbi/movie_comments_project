@@ -1,6 +1,8 @@
 const { isLoggedIn, isNotLoggedIn, logInChecker, updateTemperature } = require('./middleware')
 jest.mock('jsonwebtoken')
 const jwt = require('jsonwebtoken')
+jest.mock('../models/index')
+const { User, User_review } = require('../models/index')
 import 'babel-polyfill'
 
 // isLoggedIn 미들웨어 테스트
@@ -78,6 +80,8 @@ describe('isNotLoggedIn', () => {
       }
     }
 
+    jwt.verify.mockImplementation(() => true)
+
     isNotLoggedIn(req, res, next)
     expect(res.status).toBeCalledWith(400)
     expect(res.json).toBeCalledWith({success: false, message: "유효하지 않은 접근입니다."})
@@ -152,4 +156,21 @@ describe('logInChecker', () => {
 // 온도를 업데이트하는 updateTemperature 함수 테스트
 describe('updateTemperature', () => {
   
+  test('User테이블의 temperature속성을 업데이트 해준다.', async () => {
+    const reviewed_index = 3
+    const mockFn = User_review.findAndCountAll.mockReturnValue(Promise.resolve({
+      rows: [{score: 2}, {score: 4}],
+      count: 2
+    }))
+
+    const findAndCount = await mockFn()
+
+    let totalScore = 0;
+    findAndCount.rows.forEach(el => {totalScore += el.score})
+    const newTemperature = parseFloat(10 * totalScore/findAndCount.count).toFixed(1)
+
+    User.update.mockImplementation(() => true)
+    updateTemperature(reviewed_index)
+    expect(newTemperature).toBe("30.0")
+  })
 })
