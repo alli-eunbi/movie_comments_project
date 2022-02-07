@@ -44,6 +44,7 @@ function MovieSearchPage() {
                             key={movie.index}
                             image={movie.poster_url}
                             movieId={movie.index}
+
                         />   
                         ))}
                     </Container>

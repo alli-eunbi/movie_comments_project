@@ -17,6 +17,7 @@ function MovieDetail(props) {
         <Text>{movie.plot}</Text>
         <Favorite/>
         <Star/>
+        
       </Box>
     </>
   )
