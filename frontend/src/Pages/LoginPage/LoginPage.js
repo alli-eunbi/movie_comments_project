@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useRecoilState, useRecoilValue } from "recoil";
 import { useNavigate } from "react-router-dom";
 import { userState, loginState, logoutState } from "../../Pages/Recoil/Atoms";
+//import { loginSelector, logoutSelector } from "../../Pages/Recoil/Selectors";
 
 
 
@@ -53,6 +54,8 @@ const LoginPage = () => {
       if (result[0] === true) {
         setLoginResult(result[0]);
         setLogoutResult(!result[0]);
+        // localStorage.setItem("logState", loginResult);
+        // console.log(localStorage.getItem("logState"));
         navigate('/');
       }
     })
