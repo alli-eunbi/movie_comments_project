@@ -35,19 +35,19 @@ const router = express.Router()
  *                want_watch_movies:
  *                  type: array
  *                  example: [{movie_index: 1, poster_url: 'url1', title: '춤추는 남자들'}, {movie_index: 2, poster_url: 'url2', title: '여배우는 오늘도'}]
- *      401:
+ *      301:
  *        description: 잘못된 토큰을 전달했을때
  *        content:
  *          application/json:
  *            schema:
  *              $ref: '#/components/schemas/UnvalidToken'
- *      419:
+ *      302:
  *        description: 토큰이 만료된 경우
  *        content:
  *          application/json:
  *            schema:
  *              $ref: '#/components/schemas/ExpiredToken'
- *      402:
+ *      303:
  *        description: user_id로 넘겨준 인덱스가 User 테이블에 없는경우
  *        content:
  *          application/json:
@@ -131,7 +131,7 @@ router.get('/:user_id', isLoggedIn, async (req, res, next) => {
     res.json(response)
     
   } catch (err) {
-    if (err.name === 'TypeError') return res.status(402).json({success: false, message: '없는 유저의 인덱스 입니다.'})
+    if (err.name === 'TypeError') return res.status(303).json({success: false, message: '없는 유저의 인덱스 입니다.'})
     console.error(err)
     next(err)
   }
@@ -186,13 +186,13 @@ router.get('/:user_id', isLoggedIn, async (req, res, next) => {
  *                new_comment:
  *                  type: object
  *                  example: {index: 6, reviewed_index: 4, reviewer_index: 2, score: 4, comment: 평가 내용}
- *      401:
+ *      301:
  *        description: 잘못된 토큰을 전달했을때
  *        content:
  *          application/json:
  *            schema:
  *              $ref: '#/components/schemas/UnvalidToken'
- *      419:
+ *      302:
  *        description: 토큰이 만료된 경우
  *        content:
  *          application/json:
@@ -281,13 +281,13 @@ router.post('/rating/:reviewed_user_id', isLoggedIn, async (req, res, next) => {
  *                message:
  *                  type: string
  *                  example: 유저에 해당하는 코멘트가 없습니다.
- *      401:
+ *      301:
  *        description: 잘못된 토큰을 전달했을때
  *        content:
  *          application/json:
  *            schema:
  *              $ref: '#/components/schemas/UnvalidToken'
- *      419:
+ *      302:
  *        description: 토큰이 만료된 경우
  *        content:
  *          application/json:
@@ -377,7 +377,7 @@ router.get('/comments/:reviewed_user_id', isLoggedIn, async (req, res, next) => 
  *                new_comment:
  *                  type: object
  *                  example: {index: 유저평가 테이블 인덱스, reviewed_index: 평가된 유저의 인덱스, reviewer_index: 평가한 유저의 인덱스, score: 점수, comment: 평가내용}
- *      400:
+ *      303:
  *        description: 전달받은 커멘트가 없어서 삭제를 못한 경우
  *        content:
  *          application/json:
@@ -390,13 +390,13 @@ router.get('/comments/:reviewed_user_id', isLoggedIn, async (req, res, next) => 
  *                message:
  *                  type: string
  *                  example: 해당하는 평가혹은 평가에 변화가 없습니다.
- *      401:
+ *      301:
  *        description: 잘못된 토큰을 전달했을때
  *        content:
  *          application/json:
  *            schema:
  *              $ref: '#/components/schemas/UnvalidToken'
- *      419:
+ *      302:
  *        description: 토큰이 만료된 경우
  *        content:
  *          application/json:
@@ -429,7 +429,7 @@ router.put('/rating/:reviewed_index/:user_review_index', isLoggedIn, async (req,
     })
 
     // update한 부분이 없는 경우
-    if (result[0] === 0) return res.status(400).json({success: false, message: '해당하는 평가혹은 평가에 변화가 없습니다.'})
+    if (result[0] === 0) return res.status(303).json({success: false, message: '해당하는 평가혹은 평가에 변화가 없습니다.'})
 
     // update시킨 점수를 바탕으로 User테이블의 temperature를 수정해준다.
     const newTemperature = await updateTemperature(reviewed_index)
@@ -487,7 +487,7 @@ router.put('/rating/:reviewed_index/:user_review_index', isLoggedIn, async (req,
  *                temperature:
  *                  type: number
  *                  example: 새로 업데이트된 유저의 온도
- *      400:
+ *      303:
  *        description: 전달받은 커멘트가 없어서 삭제를 못한 경우
  *        content:
  *          application/json:
@@ -500,13 +500,13 @@ router.put('/rating/:reviewed_index/:user_review_index', isLoggedIn, async (req,
  *                message:
  *                  type: string
  *                  example: 해당하는 평가가 없습니다.
- *      401:
+ *      301:
  *        description: 잘못된 토큰을 전달했을때
  *        content:
  *          application/json:
  *            schema:
  *              $ref: '#/components/schemas/UnvalidToken'
- *      419:
+ *      302:
  *        description: 토큰이 만료된 경우
  *        content:
  *          application/json:
@@ -532,7 +532,7 @@ router.delete('/rating/:reviewed_index/:user_review_index', isLoggedIn, async (r
     })
 
     // 전달받은 커멘트가 없는경우
-    if (result === 0) return res.status(400).json({success: false, message: '해당하는 평가가 없습니다.'})
+    if (result === 0) return res.status(303).json({success: false, message: '해당하는 평가가 없습니다.'})
 
     // 삭제시킨 코멘트와 점수를 바탕으로 User테이블의 temperature를 수정해준다.
     const newTemperature = await updateTemperature(reviewed_index)

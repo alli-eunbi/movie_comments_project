@@ -53,7 +53,7 @@ const router = express.Router();
  *                message:
  *                  type: string
  *                  example: 회원가입 성공
- *      400:
+ *      201:
  *        description: 아이디가 이미 존재하는 경우
  *        content:
  *          application/json:
@@ -84,7 +84,7 @@ router.post("/register", isNotLoggedIn, async (req, res, next) => {
         success: false,
         message: "이미 존재하는 아이디입니다.",
       };
-      return res.status(400).json(response);
+      return res.status(201).json(response);
     }
 
     // 존재하지 않는 아이디라면 해쉬로 만들어서 저장 후 확인메시지를 보낸다.
@@ -139,7 +139,7 @@ router.post("/register", isNotLoggedIn, async (req, res, next) => {
  *                message:
  *                  type: string
  *                  example: 로그인 완료
- *      400:
+ *      201:
  *        description: 가입되지 않은 유저의 경우
  *        content:
  *          application/json:
@@ -152,7 +152,7 @@ router.post("/register", isNotLoggedIn, async (req, res, next) => {
  *                message:
  *                  type: string
  *                  example: 가입되지 않은 회원입니다.
- *      401:
+ *      202:
  *        description: 비밀번호가 틀린 경우
  *        content:
  *          application/json:
@@ -177,13 +177,15 @@ router.post("/login/local", isNotLoggedIn, (req, res, next) => {
     }
     // 회원가입한 유저가 아닌 경우
     if (!user) {
+      console.log(info)
       if (info.message === "no user") {
+        console.log(info.message)
         return res
-          .status(400)
+          .status(201)
           .json({ success: false, message: "가입되지 않은 회원입니다." });
       } else {
         return res
-          .status(401)
+          .status(202)
           .json({ success: false, message: "비밀번호가 일치하지 않습니다." });
       }
     }
@@ -236,7 +238,7 @@ router.post("/login/local", isNotLoggedIn, (req, res, next) => {
  *                message:
  *                  type: string
  *                  example: 로그아웃 성공
- *      401:
+ *      301:
  *        description: 토큰이 잘못된 경우
  *        content:
  *          application/json:
@@ -249,7 +251,7 @@ router.post("/login/local", isNotLoggedIn, (req, res, next) => {
  *                message:
  *                  type: string
  *                  example: 유효하지 않은 토큰입니다.
- *      419:
+ *      302:
  *        description: 토큰이 만료된 경우 기본은 1일이 지나야 만료됨
  *        content:
  *          application/json:
@@ -289,7 +291,7 @@ router.get("/logout", isLoggedIn, (req, res, next) => {
  *              message:
  *                type: string
  *                example: 로그인 완료
- *      400:
+ *      300:
  *        description: 로그인이 되어있는 상태에서 시도하는 경우
  *        content:
  *          application/json:
@@ -366,7 +368,7 @@ router.get("/callback/kakao", (req, res, next) => {
  *                id:
  *                  type: string
  *                  example: 유저 아이디
- *      401:
+ *      301:
  *        description: 토큰이 잘못된 경우
  *        content:
  *          application/json:
@@ -379,7 +381,7 @@ router.get("/callback/kakao", (req, res, next) => {
  *                message:
  *                  type: string
  *                  example: 유효하지 않은 토큰입니다.
- *      419:
+ *      302:
  *        description: 토큰이 만료된 경우 기본은 1일이 지나야 만료됨
  *        content:
  *          application/json:
@@ -429,7 +431,7 @@ router.get("/test1", isLoggedIn, (req, res, next) => {
  *                id:
  *                  type: string
  *                  example: 유저 아이디
- *      400:
+ *      300:
  *        description: 로그인이 된 상태로 접근하는 경우
  *        content:
  *          application/json:
