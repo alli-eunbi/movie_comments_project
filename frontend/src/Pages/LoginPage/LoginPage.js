@@ -18,11 +18,8 @@ const LoginPage = () => {
   const [loginResult, setLoginResult] = useRecoilState(loginState);
   const [logoutResult, setLogoutResult] = useRecoilState(logoutState);
 
-
   const [id, setId] = useState("");
   const [password, setPassword] = useState("");
-
-  // const resultValue = useRecoilValue(successSelector); // 다른 파일에 사용 될
 
   //input에 입력하면 자동적으로 account state값 변경
   const onChangeAccount = (e) => {
@@ -47,7 +44,6 @@ const LoginPage = () => {
     
     axios.post("http://localhost:5000/user/login/local", account, {withCredentials: true})
     .then((response)=> {
-      console.log('response')
       console.log(response)
       let success = Object.values(response);
       let result = Object.values(success[0]);
@@ -55,8 +51,6 @@ const LoginPage = () => {
       if (result[0] === true) {
         setLoginResult(result[0]);
         setLogoutResult(!result[0]);
-        // localStorage.setItem("logState", loginResult);
-        // console.log(localStorage.getItem("logState"));
         navigate('/');
       }
     })
