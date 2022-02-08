@@ -50,6 +50,7 @@ const LoginPage = () => {
       console.log(result[0]);
       if (result[0] === true) {
         setLoginResult(result[0]);
+        localStorage.setItem('logState', true);
         // setLogoutResult(!result[0]);
         navigate('/');
       }

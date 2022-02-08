@@ -1,7 +1,26 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import { List, Avatar } from 'antd';
+import axios from 'axios';
+
 
 export default function InfoPages() {
+
+  axios.get("http://localhost:5000/user-ranking")
+  .then((response)=> {
+    console.log(response)
+      if (Object.values(response.success) === true) {
+        const user_index = Object.values(response.temperature_rank.index);
+        const user_name = Object.values(response.temperature_rank.name);
+        const user_profile_img = Object.values(response.temperature_rank.profile_image);
+        const user_temperature = Object.values(response.temperature_rank.temperature);
+       console.log(user_index, user_name, user_profile_img, user_temperature);
+     }
+    }
+  )
+  .catch((error)=> {
+      console.log(error)
+  })
+
   const data = [
     {
       title: 'Ant Design Title 1',
@@ -37,7 +56,7 @@ export default function InfoPages() {
 
   return (
       <>
-        <div><h2>회원가입</h2></div>
+        <div><h2>RankPage</h2></div>
         <List
           itemLayout="horizontal"
           dataSource={data}
@@ -46,7 +65,6 @@ export default function InfoPages() {
               <List.Item.Meta
                 avatar={<Avatar src="https://joeschmoe.io/api/v1/random" />}
                 title={<a href="https://ant.design">{item.title}</a>}
-                description="Ant Design, a design language for background applications, is refined by Ant UED Team"
               />
             </List.Item>  
           )}
