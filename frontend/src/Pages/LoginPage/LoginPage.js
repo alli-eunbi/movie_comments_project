@@ -5,7 +5,7 @@ import { useRecoilState, useRecoilValue } from "recoil";
 import { useNavigate } from "react-router-dom";
 import { userState, loginState, logoutState } from "../../Pages/Recoil/Atoms";
 //import { loginSelector, logoutSelector } from "../../Pages/Recoil/Selectors";
-
+import useLocalStorage from "../../Pages/Recoil/useLocalStorage";
 
 
 const LoginPage = () => {
@@ -17,6 +17,8 @@ const LoginPage = () => {
   const [account, setAccount] = useRecoilState(userState);
   const [loginResult, setLoginResult] = useRecoilState(loginState);
   // const [logoutResult, setLogoutResult] = useRecoilState(logoutState);
+
+  const [on, setOn] = useLocalStorage("on", false);
 
   const [id, setId] = useState("");
   const [password, setPassword] = useState("");
@@ -45,13 +47,13 @@ const LoginPage = () => {
     axios.post("http://localhost:5000/user/login/local", account, {withCredentials: true})
     .then((response)=> {
       console.log(response)
-      let success = Object.values(response);
-      let result = Object.values(success[0]);
-      console.log(result[0]);
-      if (result[0] === true) {
-        setLoginResult(result[0]);
-        localStorage.setItem('logState', true);
-        // setLogoutResult(!result[0]);
+
+      let result = response.data.success;
+      console.log(result);
+
+      if (result === true) {
+        setLoginResult(result);
+        setOn(true);
         navigate('/');
       }
     })
