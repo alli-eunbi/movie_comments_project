@@ -241,32 +241,7 @@ router.get(
 );
 
 // 카카오 리다이랙트 api
-router.get("/callback/kakao", (req, res, next) => {
-  passport.authenticate("kakao", { session: false }, (err, user, info) => {
-    // 서버 에러
-    if (err) return next(err);
-
-    const userObject = user[0].dataValues;
-    // 토큰 발급
-    const token = jwt.sign(
-      {
-        user_index: userObject.index,
-        user_id: userObject.id,
-      },
-      process.env.JWT_SECRET_KEY,
-      {
-        expiresIn: "1d",
-      }
-    );
-
-    res.cookie("accessToken", token, {
-      expires: new Date(Date.now() + 24 * 3600000), // 1일 뒤에 사라짐
-      httpOnly: true,
-    });
-
-    return res.json({ success: true, message: "로그인 완료" });
-  })(req, res, next);
-});
+router.get("/callback/kakao", loginController.kakaoCallback);
 
 /**
  * @swagger

@@ -66,28 +66,33 @@ exports.logInChecker = (req, res, next) => {
 // User테이블의 temperature를 업데이트 해주는 함수
 // 위 3개의 함수는 미들웨어이지만 아래 작성된 함수는 일반 함수이다.
 exports.updateTemperature = async (reviewed_index) => {
-  const findAndCount = await User_review.findAndCountAll({
-    where: {
-      reviewed_index: reviewed_index
-    },
-    attributes: ['score']
-  })
-
-  // temperature 업데이트 부분
-  let totalScore = 0;
-  findAndCount.rows.forEach(el => {totalScore += el.score})
-  console.log('temp: ', 10 * totalScore/findAndCount.count)
-  const newTemperature = parseFloat(10 * totalScore/findAndCount.count).toFixed(1)
-  console.log('temperature: ', newTemperature)
-
-  await User.update({
-    temperature: newTemperature
-  }, {
-    where: {
-      index: reviewed_index
-    }
-  })
-
-  return newTemperature
+  try {
+    const findAndCount = await User_review.findAndCountAll({
+      where: {
+        reviewed_index: reviewed_index
+      },
+      attributes: ['score']
+    })
+  
+    // temperature 업데이트 부분
+    let totalScore = 0;
+    findAndCount.rows.forEach(el => {totalScore += el.score})
+    console.log('temp: ', 10 * totalScore/findAndCount.count)
+    const newTemperature = parseFloat(10 * totalScore/findAndCount.count).toFixed(1)
+    console.log('temperature: ', newTemperature)
+  
+    await User.update({
+      temperature: newTemperature
+    }, {
+      where: {
+        index: reviewed_index
+      }
+    })
+  
+    return newTemperature
+  } catch (err) {
+    console.error(err)
+    return 0
+  }
 }
 
