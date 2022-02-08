@@ -5,6 +5,29 @@ const userInfoController = require('../controllers/user_info')
 
 const router = express.Router()
 
+// 유저 상세 페이지 이동 api
+// 보내줘야되는 데이터는 영화 제목, 포스터, 별점, 코멘트, 상세페이지 유저의 온도, 보고싶은 영화
+// 하나의 영화당 { 제목, 포스터, 별점, 코멘트 } 의 형식으로 보내주자
+// 전체 데이터는 { 온도: 온도, 평가한영화들: [{영화1}, {영화2}, ... ], 보고싶은영화들: [ {제목, 포스터}, ...} ...] 의 형식
+router.get('/:user_id', isLoggedIn, userInfoController.showUserInfoPage)
+
+// 유저 평가하는 기능
+router.post('/rating/:reviewed_user_id', isLoggedIn, userInfoController.ratingUser)
+
+// 유저 리뷰의 인덱스, 리뷰한 유저의 인덱스, 리뷰한 유저의 닉네임, 리뷰 점수 및 코멘트를 전달한다.
+// 해당 유저의 평가목록을 불러오는 api
+router.get('/comments/:reviewed_user_id', isLoggedIn, userInfoController.showUserComment)
+
+// 유저 평가를 수정하는 api
+// 프론트 서버로부터 score, comment, reviewed_index(상세페이지에 해당하는 유저의 인덱스)를 받는다.
+router.put('/rating/:reviewed_index/:user_review_index', isLoggedIn, userInfoController.modifyUserComment)
+
+// 유저 평가 삭제하는 기능 관련 api
+router.delete('/rating/:reviewed_index/:user_review_index', isLoggedIn, userInfoController.deleteUserComment)
+
+
+module.exports = router
+
 /**
  * @swagger
  * /user-info/{user_id}:
@@ -65,11 +88,7 @@ const router = express.Router()
  *        description: 서버 내부 에러           
  */
 
-// 유저 상세 페이지 이동 api
-// 보내줘야되는 데이터는 영화 제목, 포스터, 별점, 코멘트, 상세페이지 유저의 온도, 보고싶은 영화
-// 하나의 영화당 { 제목, 포스터, 별점, 코멘트 } 의 형식으로 보내주자
-// 전체 데이터는 { 온도: 온도, 평가한영화들: [{영화1}, {영화2}, ... ], 보고싶은영화들: [ {제목, 포스터}, ...} ...] 의 형식
-router.get('/:user_id', isLoggedIn, userInfoController.showUserInfoPage)
+
 
 
 /**
@@ -135,8 +154,7 @@ router.get('/:user_id', isLoggedIn, userInfoController.showUserInfoPage)
  *      500:
  *        description: 서버 에러
  */
-// 유저 평가하는 기능
-router.post('/rating/:reviewed_user_id', isLoggedIn, userInfoController.ratingUser)
+
 
 
 /**
@@ -204,9 +222,7 @@ router.post('/rating/:reviewed_user_id', isLoggedIn, userInfoController.ratingUs
  *      500:
  *        description: 서버 에러    
  */
-// 유저 리뷰의 인덱스, 리뷰한 유저의 인덱스, 리뷰한 유저의 닉네임, 리뷰 점수 및 코멘트를 전달한다.
-// 해당 유저의 평가목록을 불러오는 api
-router.get('/comments/:reviewed_user_id', isLoggedIn, userInfoController.showUserComment)
+
 
 
 /**
@@ -291,9 +307,7 @@ router.get('/comments/:reviewed_user_id', isLoggedIn, userInfoController.showUse
  *      500:
  *        description: 서버 에러   
  */
-// 유저 평가를 수정하는 api
-// 프론트 서버로부터 score, comment, reviewed_index(상세페이지에 해당하는 유저의 인덱스)를 받는다.
-router.put('/rating/:reviewed_index/:user_review_index', isLoggedIn, userInfoController.modifyUserComment)
+
 
 
 /**
@@ -361,8 +375,3 @@ router.put('/rating/:reviewed_index/:user_review_index', isLoggedIn, userInfoCon
  *      500:
  *        description: 서버 에러  
  */
-// 유저 평가 삭제하는 기능 관련 api
-router.delete('/rating/:reviewed_index/:user_review_index', isLoggedIn, userInfoController.deleteUserComment)
-
-
-module.exports = router

@@ -11,6 +11,29 @@ const loginController = require('../controllers/login')
 const router = express.Router();
 
 // 회원가입 api 처리
+router.post("/register", isNotLoggedIn, loginController.register);
+
+// 우선 처음 로그인 하는 경우 jwt를 발급해주자.
+router.post("/login/local", isNotLoggedIn, loginController.loginLocal);
+
+// 로그 아웃 api
+router.get("/logout", isLoggedIn, (req, res, next) => {
+  res.clearCookie("accessToken", { httpOnly: true });
+  res.json({ success: true, message: "로그아웃 성공" });
+});
+
+// 카카오 로그인 및 회원가입 api
+router.get(
+  "/login/kakao",
+  isNotLoggedIn,
+  passport.authenticate("kakao", { session: false })
+);
+
+// 카카오 리다이랙트 api
+router.get("/callback/kakao", loginController.kakaoCallback);
+
+module.exports = router;
+
 /**
  * @swagger
  * /user/register:
@@ -70,7 +93,7 @@ const router = express.Router();
  *      500:
  *        description: 서버 내부 에러
  */
-router.post("/register", isNotLoggedIn, loginController.register);
+
 
 // 로그인 api 처리
 /**
@@ -137,8 +160,7 @@ router.post("/register", isNotLoggedIn, loginController.register);
  *      500:
  *        description: 서버 에러
  */
-// 우선 처음 로그인 하는 경우 jwt를 발급해주자.
-router.post("/login/local", isNotLoggedIn, loginController.loginLocal);
+
 
 // 로그아웃 api 처리
 /**
@@ -195,10 +217,7 @@ router.post("/login/local", isNotLoggedIn, loginController.loginLocal);
  *      500:
  *        description: 서버 에러
  */
-router.get("/logout", isLoggedIn, (req, res, next) => {
-  res.clearCookie("accessToken", { httpOnly: true });
-  res.json({ success: true, message: "로그아웃 성공" });
-});
+
 
 /**
  * @swagger
@@ -233,15 +252,6 @@ router.get("/logout", isLoggedIn, (req, res, next) => {
  *      500:
  *        description: 서버 에러
  */
-// 카카오 로그인 및 회원가입 api
-router.get(
-  "/login/kakao",
-  isNotLoggedIn,
-  passport.authenticate("kakao", { session: false })
-);
-
-// 카카오 리다이랙트 api
-router.get("/callback/kakao", loginController.kakaoCallback);
 
 /**
  * @swagger
@@ -354,4 +364,4 @@ router.get("/test2", isNotLoggedIn, (req, res, next) => {
   res.json({ success: true, message: "isNotLoggedIn 함수 정상 작동" });
 });
 
-module.exports = router;
+
