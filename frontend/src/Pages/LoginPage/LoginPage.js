@@ -5,7 +5,7 @@ import { useRecoilState, useRecoilValue } from "recoil";
 import { useNavigate } from "react-router-dom";
 import { userState, loginState, logoutState } from "../../Pages/Recoil/Atoms";
 //import { loginSelector, logoutSelector } from "../../Pages/Recoil/Selectors";
-
+import useLocalStorage from "../../Pages/Recoil/useLocalStorage";
 
 
 const LoginPage = () => {
@@ -16,13 +16,12 @@ const LoginPage = () => {
   //input에서 입력한 아이디와 비밀번호 정보를 담기위한 state
   const [account, setAccount] = useRecoilState(userState);
   const [loginResult, setLoginResult] = useRecoilState(loginState);
-  const [logoutResult, setLogoutResult] = useRecoilState(logoutState);
+  // const [logoutResult, setLogoutResult] = useRecoilState(logoutState);
 
+  const [on, setOn] = useLocalStorage("on", false);
 
   const [id, setId] = useState("");
   const [password, setPassword] = useState("");
-
-  // const resultValue = useRecoilValue(successSelector); // 다른 파일에 사용 될
 
   //input에 입력하면 자동적으로 account state값 변경
   const onChangeAccount = (e) => {
@@ -47,16 +46,14 @@ const LoginPage = () => {
     
     axios.post("http://localhost:5000/user/login/local", account, {withCredentials: true})
     .then((response)=> {
-      console.log('response')
       console.log(response)
-      let success = Object.values(response);
-      let result = Object.values(success[0]);
-      console.log(result[0]);
-      if (result[0] === true) {
-        setLoginResult(result[0]);
-        setLogoutResult(!result[0]);
-        // localStorage.setItem("logState", loginResult);
-        // console.log(localStorage.getItem("logState"));
+
+      let result = response.data.success;
+      console.log(result);
+
+      if (result === true) {
+        setLoginResult(result);
+        setOn(true);
         navigate('/');
       }
     })

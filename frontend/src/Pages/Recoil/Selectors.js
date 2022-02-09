@@ -1,5 +1,5 @@
 import { selector } from 'recoil';
-import { loginState, logoutState } from '../../Pages/Recoil/Atoms';
+import { loginState } from '../../Pages/Recoil/Atoms';
 
 export const logSelector = selector({
   key: 'loginselector',
@@ -7,13 +7,11 @@ export const logSelector = selector({
   get: ({ get }) => {
 
     const loginResult = get(loginState);
-    const logoutResult = get(logoutState);
+    // const loggedCheck = get(localStorage.getItem('logState'));
 
-    const token = localStorage.getItem('logState');
-
-      if (loginResult === true && logoutResult === false) {
+      if (loginResult === true ) {
         return `로그아웃`;
-      } else if (loginResult === false && logoutResult === true) {
+      } else if (loginResult === false ) {
         return `로그인`;
       } else {
         return `로그인`;

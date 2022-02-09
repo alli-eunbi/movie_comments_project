@@ -20,6 +20,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import { loginState, logoutState } from "../../Pages/Recoil/Atoms";
 import { logSelector } from "../../Pages/Recoil/Selectors";
 import { useRecoilState, useRecoilValue } from "recoil";
+import useLocalStorage from "../../Pages/Recoil/useLocalStorage";
 
 
 const settings = ['마이페이지'];
@@ -28,6 +29,8 @@ const NavBar = (props) => {
 
     const [SearchTerms, setSearchTerms] = useState("")
     const [MovieKeyword, setMovieKeyword] = useState("")
+
+    const [on, setOn] = useLocalStorage("on", false);
     
     const searchHandler = (event) => {
         setSearchTerms(event.currentTarget.value)
@@ -44,10 +47,20 @@ const NavBar = (props) => {
     }
 
 
-    const [logoutValue, setLogoutValue] = useRecoilState(logoutState);
+    // const [logoutValue, setLogoutValue] = useRecoilState(logoutState);
     const [loginValue, setLoginValue] = useRecoilState(loginState);
 
-    const userLogged = useRecoilValue(logSelector);
+    // const userLogged = useRecoilValue(logSelector);
+    const userLogged = (on) => {
+        if (on === true) {
+            return `로그아웃`
+        } else if (on === false) {
+            return `로그인`
+        } else {
+            return `로그인`
+        }
+    }
+
     // const token = localStorage.getItem('logState');
     
     // const logOutHandler = () => {
@@ -66,23 +79,27 @@ const NavBar = (props) => {
     // }
 
     const LogInChecker = () => {
-        console.log(loginValue, logoutValue)
-        if(loginValue === true && logoutValue === false) {              // login 상태
+        console.log(loginValue)
+        if(loginValue === true) {              // login 상태
             axios.get('http://localhost:5000/user/logout', {withCredentials: true})
             .then(response => {
-                let success = Object.values(response);
-                let result = Object.values(success[0]);
-                if (result[0] === true) {
-                    setLogoutValue(result[0]);
-                    setLoginValue(!result[0]);
-                    // localStorage.setItem("logState", logoutValue);
+                
+                let result = response.data.success;
+
+                if (result === true) {
+                    setLoginValue(!result);
+                    setOn(false);
                     navigate('/');
+                    alert('로그아웃 되었습니다.');
                 } else {
                     alert('로그아웃에 실패');
                 }
                 
             })
-        } else if(loginValue === false && logoutValue === true) {       // logout 상태
+            .catch((error) => {
+                console.log(error);
+            })
+        } else if(loginValue === false) {       // logout 상태
             navigate('/login');
         } else {
             navigate('/login');
@@ -106,7 +123,7 @@ const NavBar = (props) => {
                     </Button>
                 </Link>
                 <Button sx={{ my: 2, color: 'white', display: 'block'}} onClick={LogInChecker}>
-                    {userLogged}
+                    {userLogged(on)}
                 </Button>
                 <Link to= '/register'>
                     <Button sx={{ my: 2, color: 'white', display: 'block'}}>
