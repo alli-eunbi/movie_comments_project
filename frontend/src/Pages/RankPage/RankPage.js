@@ -1,21 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { List, Avatar } from 'antd';
 import axios from 'axios';
-
 import styled from 'styled-components';
 import NavBar from '../../Components/NavBar/NavBar';
 
 
 export default function RankPage() {
 
-  const [SearchTerm, setSearchTerm] = useState("")
-  const [userData, setUserData] = useState([])
+  const [searchTerm, setSearchTerm] = useState("")
+  const [reviewData, setReviewData] = useState([])
+  const [tempData, setTempData] = useState([])
+
 
   useEffect(() => {
     const fetchData = async() => {
         const result = await axios.get(`http://localhost:5000/user-ranking`);
-        setUserData(result.data.reviewNum_rank)
-        console.log(userData) 
+        console.log(result)
+        setReviewData(result.data.reviewNum_rank)
+        setTempData(result.data.temperature_rank)
+        console.log(reviewData, tempData) 
     }
     fetchData();
   },[])
@@ -24,27 +27,8 @@ export default function RankPage() {
     setSearchTerm(newSearchTerm)
   }
 
-  // const data = () => {
-
-  //   axios.get("http://localhost:5000/user-ranking")
-  //   .then((response)=> {
-  //     console.log(response)
-  //     console.log(response.data.reviewNum_rank)
-
-  //     const userData = response.data.reviewNum_rank;
-
-  //       if (response.data.success === true) {
-  //         return userData;
-  //       }
-  //     }
-  //   )
-  //   .catch((error)=> {
-  //       console.log(error)
-  //   })
-
-  // }
-
-  console.log(userData)
+  console.log(reviewData)
+  console.log(tempData)
 
   return (
       <>
@@ -55,19 +39,40 @@ export default function RankPage() {
             <Box>
               <h4>영광의 TOP 10</h4>
               <Container>
-                <List
-                  itemLayout="horizontal"
-                  dataSource={userData}
-                  renderItem={item => (
-                    <List.Item>
-                      <List.Item.Meta
-                        avatar={<Avatar src="https://joeschmoe.io/api/v1/random" />}
-                        title={item.name}
-                      />
-                    </List.Item>
-                  )}
-                />
+                <div>
+                  <div>리뷰가 많은 이용자수 TOP5</div>
+                  <List
+                    itemLayout="horizontal"
+                    dataSource={reviewData}
+                    renderItem={item => (
+                      <List.Item>
+                        <List.Item.Meta
+                          avatar={<Avatar src="https://joeschmoe.io/api/v1/random" />}
+                          title={item.name}
+                        />
+                      </List.Item>
+                    )}
+                  />
+                </div>
+                <div>
+                  <div>온도가 높은 이용자수 TOP5</div>
+                  <List
+                    itemLayout="horizontal"
+                    dataSource={tempData}
+                    renderItem={item => (
+                      <List.Item>
+                        <List.Item.Meta
+                          avatar={<Avatar src="https://joeschmoe.io/api/v1/random" />}
+                          title={item.name}
+                        />
+                      </List.Item>
+                    )}
+                  />
+                </div>
               </Container>
+              <div>
+                이용자님의 순위는 몇위 입니다.
+              </div>
             </Box>
           </Inner>
       </>
@@ -102,6 +107,8 @@ padding: 25px;
 const Container = styled.div`
 display: grid;
 padding-top: 50px;
+padding-bottom: 25px;
 grid-template-columns: repeat(2, 1fr);
 gap: 10px;
+font-size: 25px;
 `;
