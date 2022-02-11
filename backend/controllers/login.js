@@ -13,6 +13,7 @@ exports.register = async (req, res, next) => {
         id: id,
       },
     });
+
     // 중복된 아이디라면 400에러를 보낸다.
     if (user) {
       const response = {
