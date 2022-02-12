@@ -1,11 +1,10 @@
 import React, {useState} from 'react'
 import "./LoginPage.css"
 import axios from 'axios';
-import { useRecoilState, useRecoilValue } from "recoil";
+import { useRecoilState } from "recoil";
 import { useNavigate } from "react-router-dom";
-import { userState, loginState, logoutState } from "../../Pages/Recoil/Atoms";
-//import { loginSelector, logoutSelector } from "../../Pages/Recoil/Selectors";
-import useLocalStorage from "../../Pages/Recoil/useLocalStorage";
+import { userState, loginState } from "../../Pages/Recoil/Atoms";
+import useSessionStorage from "../Recoil/useSessionStorage";
 
 
 const LoginPage = () => {
@@ -16,9 +15,8 @@ const LoginPage = () => {
   //input에서 입력한 아이디와 비밀번호 정보를 담기위한 state
   const [account, setAccount] = useRecoilState(userState);
   const [loginResult, setLoginResult] = useRecoilState(loginState);
-  // const [logoutResult, setLogoutResult] = useRecoilState(logoutState);
 
-  const [on, setOn] = useLocalStorage("on", false);
+  const [on, setOn] = useSessionStorage("on", false);
 
   const [id, setId] = useState("");
   const [password, setPassword] = useState("");
