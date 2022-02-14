@@ -11,7 +11,7 @@ function MovieDetail(props) {
     <>
       <MovieImg src={movie.poster_url}/>
       <Box>
-        {movie.title}({movie.publish_year})
+        <Title>{movie.title}({movie.publish_year})</Title>
         <Text>{movie.genre}</Text>
         <SubTitle>줄거리</SubTitle>
         <Text>{movie.plot}</Text>
@@ -44,8 +44,13 @@ const Box = styled.div`
   padding: 0px;
 `;
 
+const Title = styled.div`
+  font-size: 4vh;
+  margin: 2vh;
+`
+
 const Text = styled.div`
-  font-size: 2.5vh;
+  font-size: 2vh;
   margin: 2vh;
 `
 const SubTitle = styled.div`

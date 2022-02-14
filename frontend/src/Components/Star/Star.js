@@ -18,7 +18,7 @@ function Star(props) {
     }
     
     const postRating = async(rating) => {
-        if(LogInChecker == true && rating > 0) {
+        if(LogInChecker === true && rating > 0) {
             const response = await axios.post(`http://localhost:5000/movies/${movieId}/rating`, {
                 rating: `${rating}` / 10
             }, { withCredentials : true})

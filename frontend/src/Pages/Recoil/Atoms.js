@@ -13,10 +13,10 @@ export const loginState = atom({
   default: false// default value (aka initial value)
 });
 
-export const logoutState = atom({
-  key: 'logoutstate', // unique ID (with respect to other atoms/selectors)
-  default: false// default value (aka initial value)
-});
+// export const logoutState = atom({
+//   key: 'logoutstate', // unique ID (with respect to other atoms/selectors)
+//   default: false// default value (aka initial value)
+// });
 
 // export const loginState = atom({
 //   key: 'loginstate',

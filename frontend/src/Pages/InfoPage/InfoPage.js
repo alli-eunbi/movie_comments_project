@@ -8,35 +8,28 @@ import queryString from 'query-string';
 import { API_URL } from '../../Api/Config';
 import MovieDetail from '../../Components/MovieDetail/MovieDetail'
 import { useParams } from 'react-router';
+import MainMovies from '../../Components/MainMovies/MainMovies';
+
 
 export default function InfoPages() {
 
     const [ sawMovieInfo, setSawMovieInfo ] = useState([])
     const [ likedMovieInfo, setLikedMovieInfo ] = useState([])
 
-    const movieId = useParams().movie_id;
+    const userId = useParams().user_id;
 
-    const SawMovies = () => {
-        useEffect(()=> {
-            const fetchData = async() => {
-              const result = await axios.get(`http://localhost:5000/movies/${movieId}`)
-              setSawMovieInfo(result.data.data.movie_info);
-            };
-            fetchData();
-          }, []);
-          console.log(sawMovieInfo)
-    }
 
-    const LikedMovies = () => {
-        useEffect(()=> {
-            const fetchData = async() => {
-              const result = await axios.get(`http://localhost:5000/movies/${movieId}/like`)
-              setLikedMovieInfo(result.data.data.movie_info);
-            };
-            fetchData();
-          }, []);
-          console.log(likedMovieInfo)
-    }
+    useEffect(()=> {
+        const fetchData = async() => {
+            const result = await axios.get(`http://localhost:5000/user-info/${userId}`)
+            setSawMovieInfo(result.data.comment_movies);
+            setLikedMovieInfo(result.data.want_watch_movies);
+        };
+        fetchData();
+    }, []);
+    console.log(sawMovieInfo)
+    console.log(likedMovieInfo)
+    
 
     return (
         <>
@@ -47,11 +40,25 @@ export default function InfoPages() {
                     <Title>
                         봤어요
                     </Title>
-                        {SawMovies}
+                        {sawMovieInfo && sawMovieInfo.map(movie => (
+                            <React.Fragment key={movie.index}>
+                                <MainMovies
+                                    movieId={movie.index}
+                                    image={movie.poster_url}
+                                />
+                            </React.Fragment>
+                        ))}
                     <Title>
                         보고 싶어요
                     </Title>
-                        {LikedMovies}
+                        {likedMovieInfo && likedMovieInfo.map(movie => (
+                            <React.Fragment key={movie.index}>
+                                <MainMovies
+                                    movieId={movie.index}
+                                    image={movie.poster_url}
+                                />
+                            </React.Fragment>
+                        ))}
                 </Box>
             </Inner>
         </>
