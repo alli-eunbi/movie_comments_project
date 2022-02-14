@@ -43,6 +43,8 @@ function MovieSearchPage() {
                             <SearchMovies
                             key={movie.index}
                             image={movie.poster_url}
+                            movieId={movie.index}
+
                         />   
                         ))}
                     </Container>
@@ -55,7 +57,8 @@ function MovieSearchPage() {
 export default MovieSearchPage;
 
 const Inner = styled.div`
-    height: 100vh;
+    height: auto;
+    min-height: 100vh;
     display: flex;
     background-color: #1C2126;
     justify-content: center;
@@ -66,8 +69,9 @@ const Inner = styled.div`
 
 const Box = styled.div`
     width: 90%;
-    height: 75%;
-    padding-top: 100px;
+    height: auto%;
+    min-height: 75vh;
+    margin-top: 100px;
     border-radius: 12px;
     background-color: #EEEEEE;
     box-shadow: rgba(0, 0, 0, 0.8) 0px 5px 15px;
@@ -79,10 +83,10 @@ const Box = styled.div`
 `;
 
 const Container = styled.div`
-  display: grid;
-  padding-top: 50px;
-  grid-template-columns: repeat(6, 1fr);
-  justify-items: center;
-  align-items: center;
-  gap: 10px;
+    display: grid;
+    padding-top: 50px;
+    grid-template-columns: repeat(6, 1fr);
+    justify-items: center;
+    align-items: center;
+    gap: 10px;
 `;
