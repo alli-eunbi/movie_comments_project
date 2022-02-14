@@ -93,6 +93,7 @@ const NavBar = (props) => {
         <AppBar position="fixed">
         <Container maxWidth="xl">
             <Toolbar disableGutters>
+
                 <Box sx={{ flexGrow: 200 }}>
                     <Link to= '/'>
                         <Button sx={{ my: 2, color: 'white', display: { xs: 'none', md: 'flex' }, fontSize: 20}}>
@@ -100,6 +101,21 @@ const NavBar = (props) => {
                         </Button>
                     </Link>
                 </Box>
+
+                <Box sx={{ flexGrow: 5, display: { xs: 'none', md: 'flex' } }}>
+                    <Search>
+                        <SearchIconWrapper>
+                        <SearchIcon />
+                        </SearchIconWrapper>
+                        <StyledInputBase
+                            value={SearchTerms}
+                            onChange={searchHandler}
+                            onKeyUp={enterKey}
+                            placeholder="영화검색"
+                        />
+                    </Search>
+                </Box>
+
                 <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
                     <Link to= '/rank'>
                         <Button sx={{ my: 2, color: 'white', display: 'block'}}>
@@ -116,25 +132,13 @@ const NavBar = (props) => {
                     </Link>
                 </Box>
 
-            <Box sx={{ flexGrow: 5, display: { xs: 'none', md: 'flex' } }}>
-                <Search>
-                    <SearchIconWrapper>
-                    <SearchIcon />
-                    </SearchIconWrapper>
-                    <StyledInputBase
-                        value={SearchTerms}
-                        onChange={searchHandler}
-                        onKeyUp={enterKey}
-                        placeholder="영화검색"
-                    />
-                </Search>
-            </Box>
-
             <Box sx={{ flexGrow: 0 }}>
                 <Tooltip title="Open settings">
-                <IconButton sx={{ p: 0 }}>
-                    <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
-                </IconButton>
+                    <Link to="/info">
+                        <IconButton sx={{ p: 0 }}>
+                            <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
+                        </IconButton>
+                    </Link>
                 </Tooltip>
                 <Menu
                 sx={{ mt: '45px' }}
