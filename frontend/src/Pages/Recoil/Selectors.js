@@ -7,11 +7,11 @@ export const logSelector = selector({
   get: ({ get }) => {
 
     const loginResult = get(loginState);
-    // const logoutResult = get(logoutState);
+    // const loggedCheck = get(localStorage.getItem('logState'));
 
-      if (loginResult === true) {
+      if (loginResult === true ) {
         return `로그아웃`;
-      } else if (loginResult === false) {
+      } else if (loginResult === false ) {
         return `로그인`;
       } else {
         return `로그인`;

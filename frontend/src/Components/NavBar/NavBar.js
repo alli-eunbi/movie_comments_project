@@ -16,9 +16,9 @@ import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import InputBase from '@mui/material/InputBase';
 import SearchIcon from '@mui/icons-material/Search';
-import { loginState, logoutState } from "../../Pages/Recoil/Atoms";
-import { logSelector } from "../../Pages/Recoil/Selectors";
-import { useRecoilState, useRecoilValue } from "recoil";
+import { loginState } from "../../Pages/Recoil/Atoms";
+import { useRecoilState } from "recoil";
+import useSessionStorage from "../../Pages/Recoil/useSessionStorage";
 
 
 const settings = ['마이페이지'];
@@ -27,6 +27,8 @@ const NavBar = (props) => {
 
     const [SearchTerms, setSearchTerms] = useState("")
     const [MovieKeyword, setMovieKeyword] = useState("")
+
+    const [on, setOn] = useSessionStorage("on", false);
     
     const searchHandler = (event) => {
         setSearchTerms(event.currentTarget.value)
@@ -37,13 +39,9 @@ const NavBar = (props) => {
     const [anchorElUser, setAnchorElUser] = React.useState(null);
 
     const enterKey = () => {
-<<<<<<< HEAD
-        if (window.event.keyCode === 13) {
-            return navigate(`movies/search?keyword=${SearchTerms}`);
-=======
+
         if (window.event.keyCode == 13) {
             navigate(`/movies/search?keyword=${SearchTerms}`);
->>>>>>> FE-jungjin
         }
     }
 
@@ -51,40 +49,37 @@ const NavBar = (props) => {
     // const [logoutValue, setLogoutValue] = useRecoilState(logoutState);
     const [loginValue, setLoginValue] = useRecoilState(loginState);
 
-    const userLogged = useRecoilValue(logSelector);
-    // const token = localStorage.getItem('logState');
-    
-    // const logOutHandler = () => {
-    //     axios.get('/user/logout')
-    //     .then(response => {
-    //         let success = Object.values(response);
-    //         let result = Object.values(success[0]);
-    //         if (result[0] === true) {
-    //             setLogoutValue(result[0]);
-    //             setLoginValue(!result[0]);
-    //         } else {
-    //             alert('로그아웃에 실패');
-    //         }
-            
-    //     })
-    // }
+    // const userLogged = useRecoilValue(logSelector);
+    const userLogged = (on) => {
+        if (on === true) {
+            return `로그아웃`
+        } else if (on === false) {
+            return `로그인`
+        } else {
+            return `로그인`
+        }
+    }
 
     const LogInChecker = () => {
         console.log(loginValue)
         if(loginValue === true) {              // login 상태
             axios.get('http://localhost:5000/user/logout', {withCredentials: true})
             .then(response => {
-                let success = Object.values(response);
-                let result = Object.values(success[0]);
-                if (result[0] === true) {
-                    // setLogoutValue(result[0]);
-                    setLoginValue(result[0]);
-                    // localStorage.setItem("logState", logoutValue);
+                
+                let result = response.data.success;
+
+                if (result === true) {
+                    setLoginValue(!result);
+                    setOn(false);
                     navigate('/');
+                    alert('로그아웃 되었습니다.');
                 } else {
                     alert('로그아웃에 실패');
                 }
                 
+            })
+            .catch((error) => {
+                console.log(error);
             })
         } else if(loginValue === false) {       // logout 상태
             navigate('/login');
@@ -98,28 +93,30 @@ const NavBar = (props) => {
         <AppBar position="fixed">
         <Container maxWidth="xl">
             <Toolbar disableGutters>
-                <Link to= '/'>
-                    <Button sx={{ my: 2, color: 'white', display: 'block', fontSize: 20}}>
-                        홈
+                <Box sx={{ flexGrow: 200 }}>
+                    <Link to= '/'>
+                        <Button sx={{ my: 2, color: 'white', display: { xs: 'none', md: 'flex' }, fontSize: 20}}>
+                            홈
+                        </Button>
+                    </Link>
+                </Box>
+                <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+                    <Link to= '/rank'>
+                        <Button sx={{ my: 2, color: 'white', display: 'block'}}>
+                            랭크
+                        </Button>
+                    </Link>
+                    <Button sx={{ my: 2, color: 'white', display: 'block'}} onClick={LogInChecker}>
+                        {userLogged(on)}
                     </Button>
-                </Link>
-            <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-                <Link to= '/rank'>
-                    <Button sx={{ my: 2, color: 'white', display: 'block'}}>
-                        랭크
-                    </Button>
-                </Link>
-                <Button sx={{ my: 2, color: 'white', display: 'block'}} onClick={LogInChecker}>
-                    {userLogged}
-                </Button>
-                <Link to= '/register'>
-                    <Button sx={{ my: 2, color: 'white', display: 'block'}}>
-                        회원가입
-                    </Button>
-                </Link>
-            </Box>
+                    <Link to= '/register'>
+                        <Button sx={{ my: 2, color: 'white', display: 'block'}}>
+                            회원가입
+                        </Button>
+                    </Link>
+                </Box>
 
-            <Box sx={{ flexGrow: 100, display: { xs: 'none', md: 'flex' } }}>
+            <Box sx={{ flexGrow: 5, display: { xs: 'none', md: 'flex' } }}>
                 <Search>
                     <SearchIconWrapper>
                     <SearchIcon />
@@ -155,10 +152,11 @@ const NavBar = (props) => {
         </Container>
         </AppBar>
     );
-    };
+};
+
 export default NavBar;
 
-const Search = styled('div')(({ theme }) => ({
+  const Search = styled('div')(({ theme }) => ({
     position: 'relative',
     borderRadius: theme.shape.borderRadius,
     backgroundColor: alpha(theme.palette.common.white, 0.15),

@@ -101,9 +101,9 @@ router.get('/', logInChecker , async (req, res, next) => {
     const response = {
       success: true,
       message: '랭킹 정보 전달 성공',
-      temperature_rank: userTemperatureList.slice(0, 3),
+      temperature_rank: userTemperatureList.slice(0, 5),
       user_temperature_rank: myTemperatureRank,
-      reviewNum_rank: userReviewNumList.slice(0, 3),
+      reviewNum_rank: userReviewNumList.slice(0, 5),
       user_review_rank: myReviewNumRank
     }
 

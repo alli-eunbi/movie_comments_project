@@ -7,6 +7,7 @@ import MainPage from './Pages/MainPage/MainPage';
 import RankPage from './Pages/RankPage/RankPage';
 import InfoPage from './Pages/InfoPage/InfoPage';
 import MovieInfoPage from './Pages/MovieInfoPage/MovieInfoPage';
+import MovieGradePage from './Pages/MovieGradePage/MovieGradePage';
 import LoginPage from './Pages/LoginPage/LoginPage';
 import RegisterPage from './Pages/RegisterPage/RegisterPage';
 import { RecoilRoot } from 'recoil';
@@ -25,6 +26,7 @@ function App() {
               <Route exact path="movies/search" element={<MovieSearchPage/>}/>
               <Route exact path="login" element={<LoginPage/>}/>
               <Route exact path="register" element={<RegisterPage/>}/>
+              <Route exact path="movies/grade" element={<MovieGradePage/>}/>
           </Routes>
         </div>
       </Router>
