@@ -1,7 +1,43 @@
+import React, { useState , useEffect } from 'react';
 import styled from 'styled-components';
 import NavBar from '../../Components/NavBar/NavBar';
+import axios from 'axios';
+import SearchMovies from '../../Components/SearchMovies/SearchMovies';
+import { useLocation } from 'react-router';
+import queryString from 'query-string';
+import { API_URL } from '../../Api/Config';
+import MovieDetail from '../../Components/MovieDetail/MovieDetail'
+import { useParams } from 'react-router';
 
 export default function InfoPages() {
+
+    const [ sawMovieInfo, setSawMovieInfo ] = useState([])
+    const [ likedMovieInfo, setLikedMovieInfo ] = useState([])
+
+    const movieId = useParams().movie_id;
+
+    const SawMovies = () => {
+        useEffect(()=> {
+            const fetchData = async() => {
+              const result = await axios.get(`http://localhost:5000/movies/${movieId}`)
+              setSawMovieInfo(result.data.data.movie_info);
+            };
+            fetchData();
+          }, []);
+          console.log(sawMovieInfo)
+    }
+
+    const LikedMovies = () => {
+        useEffect(()=> {
+            const fetchData = async() => {
+              const result = await axios.get(`http://localhost:5000/movies/${movieId}/like`)
+              setLikedMovieInfo(result.data.data.movie_info);
+            };
+            fetchData();
+          }, []);
+          console.log(likedMovieInfo)
+    }
+
     return (
         <>
             <NavBar/>
@@ -11,11 +47,11 @@ export default function InfoPages() {
                     <Title>
                         봤어요
                     </Title>
-                        <MovieList/>
+                        {SawMovies}
                     <Title>
                         보고 싶어요
                     </Title>
-                        <MovieList/>
+                        {LikedMovies}
                 </Box>
             </Inner>
         </>
@@ -23,7 +59,7 @@ export default function InfoPages() {
 };
 
 const Inner = styled.div`
-    height: 100vh;
+    height: 150vh;
     display: flex;
     background-color: #1C2126;
     justify-content: center;
