@@ -1,6 +1,5 @@
 const { User } = require('../models/index')
 
-
 exports.showUsersRanking = async (req, res, next) => {
   try {
     // 온도가 높은 인원 3명을 먼저 가져와보자
