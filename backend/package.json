@@ -4,9 +4,10 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node app",
-    "dev": "nodemon app --exec babel-node"
+    "dev": "nodemon app --exec babel-node",
+    "test": "jest",
+    "coverage": "jest --coverage"
   },
   "author": "",
   "license": "ISC",
@@ -23,6 +24,7 @@
     "passport": "^0.5.2",
     "passport-kakao": "^1.0.1",
     "passport-local": "^1.0.0",
+    "regenerator-runtime": "^0.13.9",
     "sequelize": "^6.14.0",
     "sequelize-cli": "^6.4.1"
   },
@@ -32,7 +34,10 @@
     "@babel/node": "^7.16.8",
     "@babel/polyfill": "^7.12.1",
     "@babel/preset-env": "^7.16.11",
+    "artillery": "^2.0.0-11",
     "babel-loader": "^8.2.3",
+    "babel-polyfill": "^6.26.0",
+    "jest": "^27.4.7",
     "nodemon": "^2.0.15",
     "swagger-jsdoc": "^6.1.0",
     "swagger-ui-express": "^4.3.0"
