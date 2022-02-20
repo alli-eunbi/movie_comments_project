@@ -1,0 +1,57 @@
+version: "3"
+
+services:
+  frontend:
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./frontend
+
+    volumes:
+      - /app/node_modules
+      - ./frontend:/app
+
+    container_name: project_frontend
+
+    ports:
+      - "3000:3000"
+
+    # 리엑트 애플리케이션에서 발생하는 버그 해결
+    stdin_open: true
+
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./backend
+
+    volumes:
+      - /app/node_modules
+      - ./backend:/app
+
+    container_name: project_backend
+
+    ports:
+      - "5000:5000"
+
+    depends_on:
+      - mysql
+
+  mysql:
+    platform: linux/x86_64
+    build: ./mysql
+
+    restart: unless-stopped
+
+    container_name: project_mysql2
+
+    ports:
+      - "3306:3306"
+
+    volumes:
+      - ./mysql/mysql_data:/var/lib/mysql
+
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: data_project

@@ -1,0 +1,2979 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Artillery report</title>
+  <script src='https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.6.0/chart.min.js"></script>
+
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300,700' rel='stylesheet' type='text/css'>
+  <link href='https://fonts.googleapis.com/css?family=PT+Serif:400,700,400italic' rel='stylesheet' type='text/css'>
+  <link href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css' rel='stylesheet' type='text/css'>
+  <link href='https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css' rel='stylesheet' type='text/css'>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.6/moment.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/ace.js" charset="utf-8"></script>
+
+  <style>
+  body, p, li {
+    font-family: sans-serif;
+    font-size: 10pt;
+  }
+
+  h1 {
+    font-size: 18pt;
+    font-weight: bold;
+  }
+
+  #errorsContainer > p {
+    color: #009900;
+  }
+
+  #footer {
+    padding: 1em;
+    font-size: 0.8em;
+    color: #999;
+    text-align: center;
+    margin-top: 1em;
+    background-color: #eee;
+  }
+  #editor {
+    font-size: 8pt;
+    height: 20em;
+  }
+
+  .chart-container {
+    margin: 20px 0px;
+  }
+  </style>
+
+  <style>
+    h1 {
+      line-height: 200%;
+    }
+
+    body {
+      background-color: #fcfcfc;
+    }
+
+    .container {
+      width: 100%;
+      min-width: 960px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+<div class="row" id="header">
+  <div class="col-lg-offset-4">
+    <pre style="font-family: monospace; font-size: 10pt; font-weight: 700; background-color: #fcfcfc; border: none;">
+        ___         __  _ ____                  _
+  _____/   |  _____/ /_(_) / /__  _______  __  (_)___  _____
+ /____/ /| | / ___/ __/ / / / _ \/ ___/ / / / / / __ \/____/
+/____/ ___ |/ /  / /_/ / / /  __/ /  / /_/ / / / /_/ /____/
+    /_/  |_/_/   \__/_/_/_/\___/_/   \__, (_)_/\____/
+                                    /____/
+    </pre>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-12">
+    <h1 class="text-center" id="page-title">Test run on <span id="timestamp"></span></h1>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-3">
+    <h4>
+      Summary
+    </h4>
+    <table class="table table-bordered table-hover table-condensed">
+      <tbody>
+        <tr>
+          <td>Test duration</td>
+          <td><span id="testDuration">0</span> sec</td>
+        </tr>
+        <tr>
+          <td>Virtual Users created</td>
+          <td><span id="vuCreated">0</span></td>
+        </tr>
+
+        <tr>
+          <td>Virtual Users completed</td>
+          <td><span id="vuCompleted">0</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="col-lg-5" id="scenarioCountsContainer">
+    <div>
+      <h4>
+        Scenario counts
+      </h4>
+      <p></p>
+
+      <table class="table table-bordered table-hover table-condensed" id="scenarioCounts">
+      </table>
+    </div>
+  </div>
+
+  <div class="col-lg-3">
+    <div id="errorsContainer">
+      <h4>
+        Errors
+      </h4>
+      <p></p>
+
+      <table class="table table-bordered table-hover table-condensed" id="errors">
+      </table>
+    </div>
+  </div>
+</div> <!-- /.row -->
+
+<div class="row">
+  <div class="col-lg-12" id="customCountersContainer">
+    <div>
+      <h4>
+        Counters
+      </h4>
+      <p></p>
+
+      <table class="table table-bordered table-hover table-condensed" id="customCountersTable">
+      </table>
+    </div>
+  </div>
+</div> <!-- /.row -->
+
+<div class="row">
+  <div class="text-center col-lg-12">
+    <h3>Charts</h3>
+  </div>
+</div>
+
+<div id="errorsChartsRow" class="row">
+  <div class="chart-container text-center col-lg-12">
+    <h4>
+      <i class="fas fa-chart-area"></i> Errors at intervals
+    </h4>
+    <canvas id="errorsAtIntervalsChart"></canvas>
+  </div>
+</div>
+
+<div id="customCountersChartsRow" class="row">
+  <div class="chart-container text-center col-lg-12">
+    <h4>
+      <i class="fas fa-chart-area"></i>Counters at intervals
+    </h4>
+    <canvas id="customCountersAtIntervalsChart"></canvas>
+  </div>
+</div>
+
+<div id="customStats"></div>
+
+<div class="row">
+  <div class="codes-line text-center col-lg-12"></div>
+</div>
+<div class="row">
+  <div class="errors-line text-center col-lg-12"></div>
+</div>
+
+</div>
+
+<div class="row">
+  <div class="col-lg-8 col-lg-offset-2">
+    <h3 class="text-center">Raw report data</h3>
+    <p>This is the raw JSON stats output that the report was generated from.</p>
+    <div id="editor">
+    </div>
+  </div>
+</div>
+
+<script charset="utf-8">
+const Report = {
+  "aggregate": {
+    "counters": {
+      "vusers.created_by_name.0": 100,
+      "vusers.created": 100,
+      "http.requests": 4144,
+      "http.codes.200": 4126,
+      "http.responses": 4126,
+      "vusers.failed": 0,
+      "vusers.completed": 82
+    },
+    "histograms": {
+      "http.response_time": {
+        "mapping": {
+          "relativeAccuracy": 0.009999999999999957,
+          "_offset": 0,
+          "gamma": 1.02020202020202,
+          "_multiplier": 34.65620375188833,
+          "minPossible": 1.135012422773875e-308,
+          "maxPossible": 1.7620952510036562e+308
+        },
+        "store": {
+          "chunkSize": 128,
+          "bins": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            2,
+            0,
+            0,
+            1,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+            1,
+            0,
+            1,
+            0,
+            0,
+            0,
+            2,
+            2,
+            1,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            1,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            2,
+            1,
+            0,
+            4,
+            2,
+            5,
+            2,
+            0,
+            1,
+            1,
+            7,
+            1,
+            10,
+            6,
+            1,
+            6,
+            1,
+            3,
+            6,
+            7,
+            5,
+            8,
+            8,
+            0,
+            5,
+            4,
+            1,
+            1,
+            3,
+            21,
+            102,
+            156,
+            185,
+            155,
+            269,
+            210,
+            279,
+            260,
+            161,
+            96,
+            148,
+            129,
+            123,
+            126,
+            86,
+            58,
+            58,
+            96,
+            171,
+            88,
+            99,
+            99,
+            51,
+            27,
+            22,
+            27,
+            41,
+            78,
+            44,
+            49,
+            40,
+            58,
+            60,
+            28,
+            41,
+            50,
+            20,
+            14,
+            34,
+            43,
+            63,
+            12,
+            15,
+            10,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "count": 4126,
+          "minKey": 207,
+          "maxKey": 462,
+          "offset": 207
+        },
+        "negativeStore": {
+          "chunkSize": 128,
+          "bins": [],
+          "count": 0,
+          "minKey": null,
+          "maxKey": null,
+          "offset": 0
+        },
+        "zeroCount": 0,
+        "count": 4126,
+        "min": 112,
+        "max": 2635,
+        "sum": 6054277
+      },
+      "vusers.session_length": {
+        "mapping": {
+          "relativeAccuracy": 0.009999999999999957,
+          "_offset": 0,
+          "gamma": 1.02020202020202,
+          "_multiplier": 34.65620375188833,
+          "minPossible": 1.135012422773875e-308,
+          "maxPossible": 1.7620952510036562e+308
+        },
+        "store": {
+          "chunkSize": 128,
+          "bins": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            82,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "count": 82,
+          "minKey": 495,
+          "maxKey": 622,
+          "offset": 495
+        },
+        "negativeStore": {
+          "chunkSize": 128,
+          "bins": [],
+          "count": 0,
+          "minKey": null,
+          "maxKey": null,
+          "offset": 0
+        },
+        "zeroCount": 0,
+        "count": 82,
+        "min": 70803.1008,
+        "max": 71105.0629,
+        "sum": 5820889.230300001
+      }
+    },
+    "rates": {
+      "http.request_rate": 64
+    },
+    "http.request_rate": null,
+    "firstCounterAt": 1645358238746,
+    "firstHistogramAt": 1645358238902,
+    "lastCounterAt": 1645358310552,
+    "lastHistogramAt": 1645358310552,
+    "firstMetricAt": 1645358238746,
+    "lastMetricAt": 1645358310552,
+    "period": 1645358310000,
+    "summaries": {
+      "http.response_time": {
+        "min": 112,
+        "max": 2635,
+        "count": 4126,
+        "p50": 1353.1,
+        "median": 1353.1,
+        "p75": 1620,
+        "p90": 2059.5,
+        "p95": 2276.1,
+        "p99": 2465.6,
+        "p999": 2618.1
+      },
+      "vusers.session_length": {
+        "min": 70803.1,
+        "max": 71105.1,
+        "count": 82,
+        "p50": 70992,
+        "median": 70992,
+        "p75": 70992,
+        "p90": 70992,
+        "p95": 70992,
+        "p99": 70992,
+        "p999": 70992
+      }
+    }
+  },
+  "intermediate": [
+    {
+      "counters": {
+        "vusers.created_by_name.0": 100,
+        "vusers.created": 100,
+        "http.requests": 133,
+        "http.codes.200": 33,
+        "http.responses": 33
+      },
+      "histograms": {
+        "http.response_time": {
+          "mapping": {
+            "relativeAccuracy": 0.009999999999999957,
+            "_offset": 0,
+            "gamma": 1.02020202020202,
+            "_multiplier": 34.65620375188833,
+            "minPossible": 1.135012422773875e-308,
+            "maxPossible": 1.7620952510036562e+308
+          },
+          "store": {
+            "chunkSize": 128,
+            "bins": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              2,
+              0,
+              0,
+              1,
+              0,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0,
+              1,
+              1,
+              0,
+              1,
+              0,
+              0,
+              0,
+              2,
+              2,
+              1,
+              0,
+              1,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0,
+              1,
+              0,
+              1,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              1,
+              0,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              2,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              2,
+              0,
+              1,
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              2,
+              1,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "count": 33,
+            "minKey": 224,
+            "maxKey": 351,
+            "offset": 224
+          },
+          "negativeStore": {
+            "chunkSize": 128,
+            "bins": [],
+            "count": 0,
+            "minKey": null,
+            "maxKey": null,
+            "offset": 0
+          },
+          "zeroCount": 0,
+          "count": 33,
+          "min": 112,
+          "max": 923,
+          "sum": 14143
+        }
+      },
+      "rates": {
+        "http.request_rate": 109
+      },
+      "http.request_rate": null,
+      "firstCounterAt": 1645358238746,
+      "firstHistogramAt": 1645358238902,
+      "lastCounterAt": 1645358239986,
+      "lastHistogramAt": 1645358239984,
+      "firstMetricAt": 1645358238746,
+      "lastMetricAt": 1645358239986,
+      "period": "1645358230000",
+      "summaries": {
+        "http.response_time": {
+          "min": 112,
+          "max": 923,
+          "count": 33,
+          "p50": 278.7,
+          "median": 278.7,
+          "p75": 658.6,
+          "p90": 820.7,
+          "p95": 889.1,
+          "p99": 907,
+          "p999": 907
+        }
+      }
+    },
+    {
+      "counters": {
+        "http.codes.200": 633,
+        "http.responses": 633,
+        "http.requests": 633
+      },
+      "histograms": {
+        "http.response_time": {
+          "mapping": {
+            "relativeAccuracy": 0.009999999999999957,
+            "_offset": 0,
+            "gamma": 1.02020202020202,
+            "_multiplier": 34.65620375188833,
+            "minPossible": 1.135012422773875e-308,
+            "maxPossible": 1.7620952510036562e+308
+          },
+          "store": {
+            "chunkSize": 128,
+            "bins": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0,
+              3,
+              1,
+              0,
+              1,
+              2,
+              0,
+              2,
+              0,
+              0,
+              0,
+              15,
+              33,
+              48,
+              26,
+              18,
+              12,
+              20,
+              34,
+              8,
+              15,
+              8,
+              9,
+              15,
+              32,
+              92,
+              45,
+              25,
+              17,
+              22,
+              13,
+              6,
+              8,
+              5,
+              30,
+              13,
+              8,
+              13,
+              13,
+              17,
+              3,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "count": 633,
+            "minKey": 278,
+            "maxKey": 405,
+            "offset": 278
+          },
+          "negativeStore": {
+            "chunkSize": 128,
+            "bins": [],
+            "count": 0,
+            "minKey": null,
+            "maxKey": null,
+            "offset": 0
+          },
+          "zeroCount": 0,
+          "count": 633,
+          "min": 922,
+          "max": 2127,
+          "sum": 983383
+        }
+      },
+      "rates": {
+        "http.request_rate": 63
+      },
+      "http.request_rate": null,
+      "firstCounterAt": 1645358240008,
+      "firstHistogramAt": 1645358240008,
+      "lastCounterAt": 1645358249993,
+      "lastHistogramAt": 1645358249992,
+      "firstMetricAt": 1645358240008,
+      "lastMetricAt": 1645358249993,
+      "period": "1645358240000",
+      "summaries": {
+        "http.response_time": {
+          "min": 922,
+          "max": 2127,
+          "count": 633,
+          "p50": 1587.9,
+          "median": 1587.9,
+          "p75": 1686.1,
+          "p90": 1939.5,
+          "p95": 2059.5,
+          "p99": 2101.1,
+          "p999": 2143.5
+        }
+      }
+    },
+    {
+      "counters": {
+        "http.codes.200": 619,
+        "http.responses": 619,
+        "http.requests": 618
+      },
+      "histograms": {
+        "http.response_time": {
+          "mapping": {
+            "relativeAccuracy": 0.009999999999999957,
+            "_offset": 0,
+            "gamma": 1.02020202020202,
+            "_multiplier": 34.65620375188833,
+            "minPossible": 1.135012422773875e-308,
+            "maxPossible": 1.7620952510036562e+308
+          },
+          "store": {
+            "chunkSize": 128,
+            "bins": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              6,
+              21,
+              8,
+              9,
+              61,
+              55,
+              26,
+              13,
+              12,
+              31,
+              56,
+              44,
+              21,
+              18,
+              18,
+              13,
+              6,
+              44,
+              48,
+              13,
+              6,
+              7,
+              6,
+              8,
+              14,
+              10,
+              5,
+              3,
+              6,
+              2,
+              1,
+              11,
+              15,
+              2,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "count": 619,
+            "minKey": 294,
+            "maxKey": 421,
+            "offset": 294
+          },
+          "negativeStore": {
+            "chunkSize": 128,
+            "bins": [],
+            "count": 0,
+            "minKey": null,
+            "maxKey": null,
+            "offset": 0
+          },
+          "zeroCount": 0,
+          "count": 619,
+          "min": 1167,
+          "max": 2261,
+          "sum": 944760
+        }
+      },
+      "rates": {
+        "http.request_rate": 62
+      },
+      "http.request_rate": null,
+      "firstCounterAt": 1645358250000,
+      "firstHistogramAt": 1645358250000,
+      "lastCounterAt": 1645358259988,
+      "lastHistogramAt": 1645358259987,
+      "firstMetricAt": 1645358250000,
+      "lastMetricAt": 1645358259988,
+      "period": "1645358250000",
+      "summaries": {
+        "http.response_time": {
+          "min": 1167,
+          "max": 2261,
+          "count": 619,
+          "p50": 1465.9,
+          "median": 1465.9,
+          "p75": 1686.1,
+          "p90": 1901.1,
+          "p95": 2059.5,
+          "p99": 2231,
+          "p999": 2276.1
+        }
+      }
+    },
+    {
+      "counters": {
+        "http.requests": 474,
+        "http.codes.200": 473,
+        "http.responses": 473
+      },
+      "histograms": {
+        "http.response_time": {
+          "mapping": {
+            "relativeAccuracy": 0.009999999999999957,
+            "_offset": 0,
+            "gamma": 1.02020202020202,
+            "_multiplier": 34.65620375188833,
+            "minPossible": 1.135012422773875e-308,
+            "maxPossible": 1.7620952510036562e+308
+          },
+          "store": {
+            "chunkSize": 128,
+            "bins": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              3,
+              6,
+              6,
+              9,
+              5,
+              3,
+              5,
+              7,
+              18,
+              28,
+              12,
+              22,
+              10,
+              20,
+              24,
+              21,
+              30,
+              35,
+              18,
+              14,
+              34,
+              43,
+              63,
+              12,
+              15,
+              10,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "count": 473,
+            "minKey": 318,
+            "maxKey": 445,
+            "offset": 318
+          },
+          "negativeStore": {
+            "chunkSize": 128,
+            "bins": [],
+            "count": 0,
+            "minKey": null,
+            "maxKey": null,
+            "offset": 0
+          },
+          "zeroCount": 0,
+          "count": 473,
+          "min": 1590,
+          "max": 2635,
+          "sum": 1037317
+        }
+      },
+      "rates": {
+        "http.request_rate": 47
+      },
+      "http.request_rate": null,
+      "firstCounterAt": 1645358260002,
+      "firstHistogramAt": 1645358260003,
+      "lastCounterAt": 1645358269998,
+      "lastHistogramAt": 1645358269994,
+      "firstMetricAt": 1645358260002,
+      "lastMetricAt": 1645358269998,
+      "period": "1645358260000",
+      "summaries": {
+        "http.response_time": {
+          "min": 1590,
+          "max": 2635,
+          "count": 473,
+          "p50": 2231,
+          "median": 2231,
+          "p75": 2416.8,
+          "p90": 2465.6,
+          "p95": 2566.3,
+          "p99": 2618.1,
+          "p999": 2618.1
+        }
+      }
+    },
+    {
+      "counters": {
+        "http.codes.200": 675,
+        "http.responses": 675,
+        "http.requests": 675
+      },
+      "histograms": {
+        "http.response_time": {
+          "mapping": {
+            "relativeAccuracy": 0.009999999999999957,
+            "_offset": 0,
+            "gamma": 1.02020202020202,
+            "_multiplier": 34.65620375188833,
+            "minPossible": 1.135012422773875e-308,
+            "maxPossible": 1.7620952510036562e+308
+          },
+          "store": {
+            "chunkSize": 128,
+            "bins": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              6,
+              39,
+              31,
+              57,
+              46,
+              24,
+              14,
+              28,
+              29,
+              60,
+              52,
+              28,
+              23,
+              22,
+              35,
+              44,
+              10,
+              6,
+              6,
+              8,
+              5,
+              4,
+              6,
+              10,
+              6,
+              9,
+              14,
+              14,
+              19,
+              17,
+              3,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "count": 675,
+            "minKey": 298,
+            "maxKey": 425,
+            "offset": 298
+          },
+          "negativeStore": {
+            "chunkSize": 128,
+            "bins": [],
+            "count": 0,
+            "minKey": null,
+            "maxKey": null,
+            "offset": 0
+          },
+          "zeroCount": 0,
+          "count": 675,
+          "min": 1179,
+          "max": 2143,
+          "sum": 1003924
+        }
+      },
+      "rates": {
+        "http.request_rate": 68
+      },
+      "http.request_rate": null,
+      "firstCounterAt": 1645358270006,
+      "firstHistogramAt": 1645358270006,
+      "lastCounterAt": 1645358279961,
+      "lastHistogramAt": 1645358279957,
+      "firstMetricAt": 1645358270006,
+      "lastMetricAt": 1645358279961,
+      "period": "1645358270000",
+      "summaries": {
+        "http.response_time": {
+          "min": 1179,
+          "max": 2143,
+          "count": 675,
+          "p50": 1436.8,
+          "median": 1436.8,
+          "p75": 1587.9,
+          "p90": 1939.5,
+          "p95": 2059.5,
+          "p99": 2101.1,
+          "p999": 2143.5
+        }
+      }
+    },
+    {
+      "counters": {
+        "http.codes.200": 792,
+        "http.responses": 792,
+        "http.requests": 792
+      },
+      "histograms": {
+        "http.response_time": {
+          "mapping": {
+            "relativeAccuracy": 0.009999999999999957,
+            "_offset": 0,
+            "gamma": 1.02020202020202,
+            "_multiplier": 34.65620375188833,
+            "minPossible": 1.135012422773875e-308,
+            "maxPossible": 1.7620952510036562e+308
+          },
+          "store": {
+            "chunkSize": 128,
+            "bins": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              4,
+              59,
+              46,
+              56,
+              64,
+              118,
+              98,
+              79,
+              33,
+              30,
+              18,
+              21,
+              34,
+              24,
+              3,
+              6,
+              5,
+              3,
+              11,
+              19,
+              21,
+              18,
+              19,
+              3,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "count": 792,
+            "minKey": 298,
+            "maxKey": 425,
+            "offset": 298
+          },
+          "negativeStore": {
+            "chunkSize": 128,
+            "bins": [],
+            "count": 0,
+            "minKey": null,
+            "maxKey": null,
+            "offset": 0
+          },
+          "zeroCount": 0,
+          "count": 792,
+          "min": 1085,
+          "max": 1730,
+          "sum": 1009193
+        }
+      },
+      "rates": {
+        "http.request_rate": 79
+      },
+      "http.request_rate": null,
+      "firstCounterAt": 1645358280000,
+      "firstHistogramAt": 1645358280000,
+      "lastCounterAt": 1645358289993,
+      "lastHistogramAt": 1645358289990,
+      "firstMetricAt": 1645358280000,
+      "lastMetricAt": 1645358289993,
+      "period": "1645358280000",
+      "summaries": {
+        "http.response_time": {
+          "min": 1085,
+          "max": 1730,
+          "count": 792,
+          "p50": 1224.4,
+          "median": 1224.4,
+          "p75": 1326.4,
+          "p90": 1556.5,
+          "p95": 1620,
+          "p99": 1686.1,
+          "p999": 1720.2
+        }
+      }
+    },
+    {
+      "counters": {
+        "http.codes.200": 819,
+        "http.responses": 819,
+        "http.requests": 819
+      },
+      "histograms": {
+        "http.response_time": {
+          "mapping": {
+            "relativeAccuracy": 0.009999999999999957,
+            "_offset": 0,
+            "gamma": 1.02020202020202,
+            "_multiplier": 34.65620375188833,
+            "minPossible": 1.135012422773875e-308,
+            "maxPossible": 1.7620952510036562e+308
+          },
+          "store": {
+            "chunkSize": 128,
+            "bins": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              17,
+              41,
+              110,
+              129,
+              79,
+              76,
+              40,
+              86,
+              94,
+              34,
+              26,
+              66,
+              20,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "count": 819,
+            "minKey": 290,
+            "maxKey": 417,
+            "offset": 290
+          },
+          "negativeStore": {
+            "chunkSize": 128,
+            "bins": [],
+            "count": 0,
+            "minKey": null,
+            "maxKey": null,
+            "offset": 0
+          },
+          "zeroCount": 0,
+          "count": 819,
+          "min": 1071,
+          "max": 1391,
+          "sum": 994122
+        }
+      },
+      "rates": {
+        "http.request_rate": 82
+      },
+      "http.request_rate": null,
+      "firstCounterAt": 1645358290012,
+      "firstHistogramAt": 1645358290012,
+      "lastCounterAt": 1645358299988,
+      "lastHistogramAt": 1645358299986,
+      "firstMetricAt": 1645358290012,
+      "lastMetricAt": 1645358299988,
+      "period": "1645358290000",
+      "summaries": {
+        "http.response_time": {
+          "min": 1071,
+          "max": 1391,
+          "count": 819,
+          "p50": 1200.1,
+          "median": 1200.1,
+          "p75": 1274.3,
+          "p90": 1353.1,
+          "p95": 1353.1,
+          "p99": 1380.5,
+          "p999": 1380.5
+        }
+      }
+    },
+    {
+      "counters": {
+        "http.codes.200": 82,
+        "http.responses": 82,
+        "vusers.failed": 0,
+        "vusers.completed": 82
+      },
+      "histograms": {
+        "http.response_time": {
+          "mapping": {
+            "relativeAccuracy": 0.009999999999999957,
+            "_offset": 0,
+            "gamma": 1.02020202020202,
+            "_multiplier": 34.65620375188833,
+            "minPossible": 1.135012422773875e-308,
+            "maxPossible": 1.7620952510036562e+308
+          },
+          "store": {
+            "chunkSize": 128,
+            "bins": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0,
+              2,
+              1,
+              0,
+              2,
+              1,
+              5,
+              2,
+              0,
+              1,
+              1,
+              5,
+              1,
+              9,
+              6,
+              1,
+              5,
+              1,
+              3,
+              6,
+              5,
+              4,
+              6,
+              8,
+              0,
+              2,
+              3,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "count": 82,
+            "minKey": 269,
+            "maxKey": 396,
+            "offset": 269
+          },
+          "negativeStore": {
+            "chunkSize": 128,
+            "bins": [],
+            "count": 0,
+            "minKey": null,
+            "maxKey": null,
+            "offset": 0
+          },
+          "zeroCount": 0,
+          "count": 82,
+          "min": 590,
+          "max": 1014,
+          "sum": 67435
+        },
+        "vusers.session_length": {
+          "mapping": {
+            "relativeAccuracy": 0.009999999999999957,
+            "_offset": 0,
+            "gamma": 1.02020202020202,
+            "_multiplier": 34.65620375188833,
+            "minPossible": 1.135012422773875e-308,
+            "maxPossible": 1.7620952510036562e+308
+          },
+          "store": {
+            "chunkSize": 128,
+            "bins": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              82,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "count": 82,
+            "minKey": 495,
+            "maxKey": 622,
+            "offset": 495
+          },
+          "negativeStore": {
+            "chunkSize": 128,
+            "bins": [],
+            "count": 0,
+            "minKey": null,
+            "maxKey": null,
+            "offset": 0
+          },
+          "zeroCount": 0,
+          "count": 82,
+          "min": 70803.1008,
+          "max": 71105.0629,
+          "sum": 5820889.230300001
+        }
+      },
+      "rates": {},
+      "firstCounterAt": 1645358310004,
+      "firstHistogramAt": 1645358310004,
+      "lastCounterAt": 1645358310552,
+      "lastHistogramAt": 1645358310552,
+      "firstMetricAt": 1645358310004,
+      "lastMetricAt": 1645358310552,
+      "period": "1645358310000",
+      "summaries": {
+        "http.response_time": {
+          "min": 590,
+          "max": 1014,
+          "count": 82,
+          "p50": 820.7,
+          "median": 820.7,
+          "p75": 907,
+          "p90": 944,
+          "p95": 982.6,
+          "p99": 1002.4,
+          "p999": 1002.4
+        },
+        "vusers.session_length": {
+          "min": 70803.1,
+          "max": 71105.1,
+          "count": 82,
+          "p50": 70992,
+          "median": 70992,
+          "p75": 70992,
+          "p90": 70992,
+          "p95": 70992,
+          "p99": 70992,
+          "p999": 70992
+        }
+      }
+    }
+  ]
+};
+const editor = ace.edit("editor");
+editor.getSession().setMode("ace/mode/javascript");
+editor.setValue(JSON.stringify(Report, null, 2));
+editor.gotoLine(1);
+editor.setHighlightActiveLine(false);
+
+const l = _;
+
+$("#timestamp").html(
+  moment(Report.aggregate.period).format("DD MMM YYYY HH:mm:SS")
+);
+// $('#testDuration').html(Math.floor((l.last(Report.intermediate).lastCounterAt - Report.intermediate[0].firstCounterAt)/1000));
+$("#testDuration").html(l.size(Report.intermediate) * 10);
+$("#vuCompleted").html(Report.aggregate.counters["vusers.completed"]);
+$("#vuCreated").html(Report.aggregate.counters["vusers.created"]);
+
+const chartBgColors = {
+  red: "rgba(255, 99, 132, 0.2)",
+  orange: "rgba(255, 159, 64, 0.2)",
+  yellow: "rgba(255, 205, 86, 0.2)",
+  green: "rgba(75, 192, 192, 0.2)",
+  blue: "rgba(54, 162, 235, 0.2)",
+};
+
+const chartBorderColors = {
+  red: "rgb(255, 99, 132)",
+  orange: "rgb(255, 159, 64)",
+  yellow: "rgb(255, 205, 86)",
+  green: "rgb(75, 192, 192)",
+  blue: "rgb(54, 162, 235)",
+};
+
+const getHttpColor = (httpCode) => {
+  const code = parseInt(httpCode, 10);
+
+  if (code >= 100 && code < 200) {
+    return chartBorderColors.blue;
+  } else if (code >= 200 && code < 300) {
+    return chartBorderColors.green;
+  } else if (code >= 300 && code < 400) {
+    return chartBorderColors.red;
+  } else if (code >= 400 && code < 500) {
+    return chartBorderColors.yellow;
+  }
+
+  return chartBorderColors.orange;
+}
+
+const getLatencyColor = (latency) => {
+  switch(latency) {
+    case "min":
+      return chartBorderColors.red;
+    case "max":
+      return chartBorderColors.orange;
+    case "median":
+      return chartBorderColors.yellow;
+    case "p95":
+      return chartBorderColors.green;
+    case "p99":
+      return chartBorderColors.green;
+    default:
+      return '';
+  }
+};
+
+const getCustomStats = (stats) =>
+  l.omitBy(
+    stats,
+    (_, key) =>
+      key.startsWith("errors.") ||
+      key.startsWith("core.") ||
+      key.startsWith("engine.")
+  );
+
+const scenarioCounts = l.pickBy(Report.aggregate.counters, (_, key) =>
+  key.startsWith("vusers.created_by_name")
+);
+
+if (l.size(scenarioCounts) > 0) {
+  l.each(scenarioCounts, function (count, key) {
+    const [, , name] = key.split(".");
+
+    const $tdName = $("<td>" + name + "</td>");
+    const percentage =
+      Math.round(
+        (count / Report.aggregate.counters["vusers.created"]) *
+          100 *
+          1000
+      ) / 1000;
+    const $tdCount = $("<td>" + count + " (" + percentage + "%)" + "</td>");
+    $("<tr></tr>")
+      .append($tdName)
+      .append($tdCount)
+      .appendTo($("#scenarioCounts"));
+  });
+} else {
+  $("#scenarioCountsContainer").hide();
+}
+
+const httpCodes = l.pickBy(Report.aggregate.counters, (_, key) =>
+  key.startsWith("http.codes")
+);
+
+const errors = l.pickBy(Report.aggregate.counters, (_, key) =>
+  key.startsWith("errors.")
+);
+if (l.size(errors) > 0) {
+  l.each(errors, function (count, error) {
+    const [, errorDetail] = error.split("errors.");
+
+    $("<tr></tr>")
+      .append($("<td>" + errorDetail + "</td>"))
+      .append($("<td>" + count + "</td>"))
+      .appendTo($("#errors"));
+  });
+} else {
+  $("#errorsContainer > p").html(
+    "&#10004; Test completed without network or OS errors."
+  );
+}
+
+const getTimePeriodAggregates = (summaries) => {
+  const summary =
+    summaries["socketio.response_time"] ||
+    summaries["http.response_time"];
+  const metrics = ["min", "max", "median", "p95", "p99"];
+
+  return l.pickBy(summary, (_, key) => metrics.includes(key));
+};
+
+const getLatencyDistribution = (data) => {
+  return l.reduce(
+    data,
+    (acc, value, key) => {
+      acc.labels.push(key);
+      acc.values.push(value);
+
+      return acc;
+    },
+    { labels: [], values: [] }
+  );
+};
+
+const randomRgbColor = () => {
+  const r = Math.floor(Math.random() * 256);
+  const g = Math.floor(Math.random() * 256);
+  const b = Math.floor(Math.random() * 256);
+
+  return "rgb(" + r + ", " + g + ", " + b + ")";
+};
+
+const latencyDistributionData = getLatencyDistribution(
+  getTimePeriodAggregates(Report.aggregate.summaries)
+);
+
+const latencyAtIntervalsData = (intermediates = []) => {
+  const data = intermediates.reduce(
+    (acc, entry, idx) => {
+      const latencies = getTimePeriodAggregates(entry.summaries);
+
+      l.each(latencies, (latency, key) => {
+        acc.values[key] = acc.values[key] || [];
+
+        acc.values[key].push(latency);
+      });
+
+      acc.labels.push((idx + 1) * 10);
+
+      return acc;
+    },
+    { labels: [], values: {} }
+  );
+
+  return {
+    labels: data.labels,
+    datasets: l.map(data.values, (entry, key) => {
+      const color = getLatencyColor(key);
+
+      return {
+        label: key,
+        data: entry,
+        fill: false,
+        backgroundColor: color,
+        borderColor: color,
+        tension: 0.5,
+      };
+    })
+  };
+};
+
+const getCounterDataset = (intermediates = [], counterKeys) => {
+  let counterKey = "";
+
+  if (intermediates[0]) {
+    for (const key of counterKeys) {
+      if (key in intermediates[0].counters) {
+        counterKey = key;
+        break;
+      }
+    }
+  }
+
+  const data = intermediates.reduce(
+    (acc, entry, idx) => {
+      const count = entry.counters[counterKey] || 0;
+
+      acc.labels.push((idx + 1) * 10);
+      acc.values.push(count);
+
+      return acc;
+    },
+    { labels: [], values: [] }
+  );
+
+  return {
+    labels: data.labels,
+    datasets: [
+      {
+        data: data.values,
+        fill: false,
+        borderColor: randomRgbColor(),
+        tension: 0.5,
+      },
+    ],
+  };
+};
+
+const getMeanRpsData = (intermediates = []) => {
+  const data = intermediates.reduce(
+    (acc, entry, idx) => {
+      const count =
+        entry.rates["http.request_rate"] ||
+        entry.rates["socketio.emit_rate"] ||
+        entry.rates["websocket.send_rate"] ||
+        0;
+
+      acc.labels.push((idx + 1) * 10);
+      acc.values.push(count);
+
+      return acc;
+    },
+    { labels: [], values: [] }
+  );
+
+  return {
+    labels: data.labels,
+    datasets: [
+      {
+        data: data.values,
+        fill: false,
+        borderColor: randomRgbColor(),
+        tension: 0.5,
+      },
+    ],
+  };
+};
+
+const getHttpCodesAtIntervalsData = (intermediates = []) => {
+  const data = intermediates.reduce(
+    (acc, entry, idx) => {
+      const httpCodes = l.pickBy(entry.counters, (_, key) =>
+        key.startsWith("http.codes")
+      );
+
+      if (l.size(httpCodes) > 0) {
+        l.each(httpCodes, (count, key) => {
+          let [, , , code] = key.split(".");
+          code = parseInt(code, 10);
+
+          acc.values[code] = acc.values[code] || [];
+
+          acc.values[code].push(count);
+        });
+      }
+
+      acc.labels.push((idx + 1) * 10);
+
+      return acc;
+    },
+    { labels: [], values: {} }
+  );
+
+  return {
+    labels: data.labels,
+    datasets: l.map(data.values, (entry, key) => {
+      const color = getHttpColor(key);
+
+      return {
+        label: key,
+        data: entry,
+        fill: false,
+        backgroundColor: color,
+        borderColor: color,
+        tension: 0.5,
+      };
+    }),
+  };
+};
+
+const getHttpCodesData = (counters) => {
+  const httpCodes = l.pickBy(counters, (_, key) =>
+    key.startsWith("http.codes")
+  );
+  const labels = [];
+  const data = [];
+  const bgColors = [
+    "rgba(54, 232, 235, 0.5)",
+    "rgba(54, 235, 93, 0.5)",
+    "rgba(229, 235, 54, 0.5)",
+    "rgba(166, 54, 235, 0.5)",
+    "rgba(235, 54, 69, 0.5)",
+  ];
+
+  if (l.size(httpCodes) > 0) {
+    l.each(httpCodes, function (count, key) {
+      let [, , , code] = key.split(".");
+      code = parseInt(code, 10);
+
+      labels.push(code);
+      data.push(count);
+    });
+  }
+
+  return {
+    labels,
+    datasets: [
+      {
+        backgroundColor: labels.map(getHttpColor),
+        hoverOffset: 4,
+        data,
+      },
+    ],
+  };
+};
+
+if (l.size(errors) > 0) {
+  const getErrorsAtIntervalsData = (intermediates = []) => {
+    const data = intermediates.reduce(
+      (acc, entry, idx) => {
+        const errorsCounters = l.pickBy(entry.counters, (_, key) =>
+          key.startsWith("errors.")
+        );
+
+        l.each(errorsCounters, (count, key) => {
+          const [, errorDetail] = key.split("errors.");
+
+          acc.values[errorDetail] = acc.values[errorDetail] || [];
+
+          acc.values[errorDetail].push(count);
+        });
+
+        acc.labels.push((idx + 1) * 10);
+
+        return acc;
+      },
+      { labels: [], values: {} }
+    );
+
+    return {
+      labels: data.labels,
+      datasets: l.map(data.values, (entry, key) => {
+        return {
+          label: key,
+          data: entry,
+          fill: false,
+          backgroundColor: Object.values(chartBgColors),
+          borderColor: Object.values(chartBorderColors),
+          tension: 0.5,
+        };
+      })
+    };
+  };
+
+  new Chart(document.getElementById("errorsAtIntervalsChart"), {
+    type: "line",
+    data: getErrorsAtIntervalsData(Report.intermediate),
+    options: {
+      plugins: { legend: { position: "bottom" } },
+      aspectRatio: 3.5,
+      scales: {
+        y: {
+          beginAtZero: true,
+          title: {
+            display: true,
+            text: "ms",
+          },
+        },
+      },
+    },
+  });
+} else {
+  $("#errorsChartsRow").hide();
+}
+
+const customCounters = getCustomStats(Report.aggregate.counters);
+if (l.size(customCounters) > 0) {
+  let rows = [];
+
+  l.each(customCounters, function (count, key) {
+    const row = $("<tr></tr>")
+      .append($("<td>" + key + "</td>"))
+      .append($("<td>" + count + "</td>"));
+
+    rows.push(row);
+  });
+
+  if (rows.length > 5) {
+    const visibleRows = rows.slice(0, 5);
+    const hiddenRows = rows.slice(5).map((row) => row.addClass("hidden"));
+
+    rows = [
+      ...visibleRows,
+      $(
+        '<tr id="expandCustomCountersRow"><td class="text-center" colspan="2"><a href="" id="expandCustomCounters">Expand</a></td></tr>'
+      ),
+      ...hiddenRows,
+    ];
+  }
+
+  rows.forEach((row) => row.appendTo($("#customCountersTable")));
+
+  if (rows.length > 5) {
+    $("#expandCustomCounters").on("click", (e) => {
+      e.preventDefault();
+
+      $("#customCountersTable tr").removeClass("hidden");
+      $("#expandCustomCountersRow").addClass("hidden");
+    });
+  }
+
+  const getCustomStatsAtIntervalsData = (intermediates = []) => {
+    const data = intermediates.reduce(
+      (acc, entry, idx) => {
+        const customCounters = getCustomStats(entry.counters);
+
+        l.each(customCounters, (count, key) => {
+          acc.values[key] = acc.values[key] || [];
+
+          acc.values[key].push(count);
+        });
+
+        acc.labels.push((idx + 1) * 10);
+
+        return acc;
+      },
+      { labels: [], values: {} }
+    );
+
+    return {
+      labels: data.labels,
+      datasets: l.map(data.values, (entry, key) => {
+        color = randomRgbColor();
+
+        return {
+          label: key,
+          data: entry,
+          fill: false,
+          backgroundColor: color,
+          borderColor: color,
+          tension: 0.5,
+        };
+      }),
+    };
+  };
+
+  new Chart(document.getElementById("customCountersAtIntervalsChart"), {
+    type: "line",
+    data: getCustomStatsAtIntervalsData(Report.intermediate),
+    options: {
+      plugins: { legend: { position: "bottom" } },
+      aspectRatio: 2.5,
+      scales: {
+        y: {
+          beginAtZero: true,
+          title: {
+            display: true,
+            text: "ms",
+          },
+        },
+      },
+    },
+  });
+} else {
+  $("#customCountersChartsRow").hide();
+  $("#customCountersContainer").hide();
+}
+
+const customStats = getCustomStats(Report.aggregate.summaries);
+const customStatsContainer = $("#customStats");
+if (l.size(customStats) > 0) {
+  let $row;
+
+  Object.entries(customStats).forEach((stats, idx) => {
+    const [statsName, statsData] = stats;
+    const canvasId = "customMetric_" + idx;
+
+    if (idx === 0 || idx % 0 === 0) {
+      $row = $('<div class="row"></div>');
+    }
+
+    $row.append(
+      [
+        '<div class="chart-container text-center col-lg-6"><h4><i class="fas fa-chart-bar"></i> ',
+        statsName,
+        '</h4><canvas id="',
+        canvasId,
+        '"></canvas></div>',
+      ].join("")
+    );
+
+    $row.appendTo(customStatsContainer);
+
+    const { labels, values } = getLatencyDistribution(
+      l.pickBy(statsData, (_, key) =>
+        ["min", "max", "median", "p95", "p99"].includes(key)
+      )
+    );
+
+    setTimeout(function () {
+      new Chart(document.getElementById(canvasId), {
+        type: "bar",
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              data: values,
+              backgroundColor: Object.values(chartBgColors),
+              borderColor: Object.values(chartBorderColors),
+              borderWidth: 1,
+            },
+          ],
+        },
+        options: {
+          plugins: { legend: { display: false } },
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: "ms",
+              },
+            },
+          },
+        },
+      });
+    });
+  });
+} else {
+  customStatsContainer.hide();
+}
+</script>
+<div id="footer">
+  <footer>This report was created with <a href="https://artillery.io">Artillery</a> - free open-source load-testing for HTTP and WebSockets</footer>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,37 @@
+version: '3'
+
+services:
+  backend:
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./backend
+    
+    volumes:
+      - /app/node_modules
+      - ./backend:/app
+
+    container_name: project_backend2
+
+    ports:
+      - "5000:5000"
+
+    depends_on:
+      - mysql
+
+
+  mysql:
+    build: ./mysql
+
+    restart: unless-stopped
+
+    container_name: project_mysql2
+
+    ports:
+      - "3306:3306"
+    
+    volumes:
+      - ./mysql/mysql_data:/var/lib/mysql
+    
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: data_project
