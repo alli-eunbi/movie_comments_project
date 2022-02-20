@@ -173,4 +173,13 @@ describe('updateTemperature', () => {
     updateTemperature(reviewed_index)
     expect(newTemperature).toBe("30.0")
   })
+
+  test('서버 내부에 에러가 발생하는 경우', async () => {
+    const reviewed_index = 1
+    const error = '테스트용 에러'
+    User_review.findAndCountAll.mockRejectedValue(error)
+
+    const newTemp = await updateTemperature(reviewed_index)
+    expect(newTemp).toBe(0)
+  })
 })
