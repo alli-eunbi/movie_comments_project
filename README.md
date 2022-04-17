@@ -1,9 +1,3 @@
->**[Title(제목) 작성 형식]** <br>
->-형식: OOO팀 프로젝트 개선 기획안.md<br>
->-예시: 3팀 프로젝트 개선 기획안.md<br>
-
-## 팀명:
-
 ## docker-compose-dev.yml 사용방법
 1. root 디렉터리에서 docker-compose -f docker-compose-dev.yml up 명령어 작성
    
